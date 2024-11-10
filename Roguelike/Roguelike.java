@@ -1,3 +1,10 @@
+/*
+    NOTICE
+        If you want your save to carry over after closing the tab, you need to fork the program and run it in your own CodeHS sandbox.
+        To trigger the tutorial delete achievements.txt
+        Read patch.txt for patch notes
+*/
+
 import java.util.Random;
 import java.util.ArrayList;
 import java.io.File;
@@ -81,6 +88,8 @@ public class BattleTest {
         lib.getInput("Next up are items, items are a valuable tool, due to having limited uses they are far stronger than attacks, so use them wisely.");
         lib.clear();
         lib.getInput("Lastly are relics, relics provide permanent boosts, so be sure to stock up on a lot of them.");
+        lib.clear();
+        lib.getInput("Also, if you are ever met with an option to choose, look at the option you'd like to choose, enter the number infront of the option, and press enter. And if nothing seems to be happening, press enter aswell, it may just be waiting for you to continue it.");
         lib.clear();
         lib.getInput("We will be monitoring your progress, and will be allowing you access to superior gear as you achieve certain goals, we wouldn't want to be handing our strongest stuff to our weakest soldier after all. Your first goal will be to kill a boss, a stronger variant of an enemy, but try gaining all of them to be able to obtain all we have to offer.");
         lib.clear();
@@ -259,21 +268,26 @@ public class BattleTest {
                 if (c == '1'){
                     switch (map.moveNext()){
                         case 1:
-                            if (!startFight(false)){
-                                FileLib.removeFile(saveFile);
-                                return;
-                            }
+                            startFight(false);
                             break;
                         case 2:
-                            if (!startFight(true)){
-                                FileLib.removeFile(saveFile);
-                                return;
-                            }
+                            startFight(true);
                             break;
                         case 3:
                             Shop shop = map.shops[lib.randint(map.shops.length)];
                             shop.open();
                             break;
+                        case 4:
+                            beacon();
+                            break;
+                        case 5:
+                            mysteryEvent();
+                            break;
+                    }
+                    
+                    if (player.isDead()){
+                        FileLib.removeFile(saveFile);
+                        return;
                     }
                 } else if (c == '2'){
                     saveAdventure();
@@ -283,7 +297,7 @@ public class BattleTest {
         }
     }
     
-    public static boolean startFight(boolean boss){
+    public static void startFight(boolean boss){
         Enemy.Type[] typeList = new Enemy.Type[] {Enemy.Type.ATTACK, Enemy.Type.TANK};
         Enemy enemy = new Enemy(typeList[lib.randint(typeList.length)], map.getDepth(), boss);
             
@@ -305,10 +319,7 @@ public class BattleTest {
             lib.getInput("You now have " + player.getCoins() + " lunas");
             
             chooseReward();
-            return true;
         }
-        
-        return false;
     }
     
     public static void chooseReward(){
@@ -384,7 +395,15 @@ public class BattleTest {
                 lib.clear();
                 Shop.renderName("Reward");
                 for (int i=0; i<options.size(); i++){
-                    System.out.println((i+1) + ". " + options.get(i));
+                    System.out.print((i+1) + ". ");
+                    if (options.get(i) instanceof Attack){
+                        System.out.print(Shop.getRenCol(((Attack)options.get(i)).getRarity()));
+                    } else if (options.get(i) instanceof Item){
+                        System.out.print(Shop.getRenCol(((Item)options.get(i)).getRarity()));
+                    } else if (options.get(i) instanceof Relic){
+                        System.out.print(Shop.getRenCol(((Relic)options.get(i)).getRarity()));
+                    }
+                    System.out.println(options.get(i) + lib.reset);
                 }
                 int c = Integer.parseInt(lib.getInput("\n=> "))-1;
                 if (options.get(c) instanceof Attack){
@@ -396,6 +415,188 @@ public class BattleTest {
                 }
                 return;
             } catch (Exception e){}
+        }
+    }
+    
+    public static void beacon(){
+        int c = -1;
+        while (true){
+            try {
+                lib.clear();
+                Shop.renderName("Beacon");
+                System.out.println("1. Heal\n2. Reward");
+                c = Integer.parseInt(lib.getInput("\n=> "));
+                if (c == 1 || c == 2){
+                    break;
+                }
+            } catch (Exception e) {}
+        }
+        
+        switch (c){
+            case 1:
+                lib.clear();
+                int heal = (int)Math.ceil(player.getMaxHealth() * (lib.randint(10, 20) * 0.01)); // Heal 10-20% of max hp
+                Shop.renderName("Heal");
+                lib.getInput("The beacon healed you for " + heal + " health");
+                break;
+            case 2:
+                chooseReward();
+                break;
+        }
+    }
+    
+    public static void mysteryEvent(){
+        boolean eventHappened = false;
+        ArrayList<Integer> events = new ArrayList<Integer>();
+        
+        events.add(0);
+        
+        if (!player.hasRelic(14)){
+            events.add(1);
+        }
+        
+        events.add(2);
+        events.add(3);
+        events.add(4);
+        
+        while (!eventHappened){
+            int event = events.get(lib.randint(events.size()));
+            switch (event){
+                case 0:
+                    lib.clear();
+                    Shop.renderName("Mystery");
+                    lib.getInput("There is nothing");
+                    eventHappened = true;
+                    break;
+                case 1:
+                    while (true){
+                        try {
+                            lib.clear();
+                            Shop.renderName("Mystery");
+                            System.out.println("A strange figure stands before you, offering you riches, will you accept?\n1. Accept\n2. Reject\n3. Fight");
+                            int c = Integer.parseInt(lib.getInput("\n=> "));
+                            lib.clear();
+                            Shop.renderName("Mystery");
+                            if (c == 1){
+                                player.addCoins(1000);
+                                player.addRelic(RelicList.relics[14]);
+                                lib.getInput("The figured gave you riches, but at what cost?");
+                            break;
+                        } else if (c == 2) {
+                            lib.getInput("You decide not to accept the figure's offer");
+                            break;
+                        } else if (c == 3){
+                            lib.getInput("You decide to engage in combat with the figure.");
+                            startFight(true);
+                            break;
+                        }
+                    } catch (Exception e) {}
+                }
+                eventHappened = true;
+                break;
+            case 2:
+                while (true){
+                    try {
+                        lib.clear();
+                        Shop.renderName("Mystery");
+                        System.out.println("A strange figure stands before you, offering you riches, will you accept?\n1. Accept\n2. Reject\n3. Fight");
+                        int c = Integer.parseInt(lib.getInput("\n=> "));
+                        lib.clear();
+                        Shop.renderName("Mystery");
+                        if (c == 1){
+                            player.addCoins(1000);
+                            lib.getInput("The figured gave you riches.");
+                            break;
+                        } else if (c == 2) {
+                            lib.getInput("You decide not to accept the figure's offer");
+                            break;
+                        } else if (c == 3){
+                            lib.getInput("You decide to engage in combat with the figure.");
+                            startFight(true);
+                            break;
+                        }
+                    } catch (Exception e) {}
+                }
+                eventHappened = true;
+                break;
+            case 3:
+                while (true){
+                    try {
+                        lib.clear();
+                        Shop.renderName("Mystery");
+                        System.out.println("A strange figure stands before you, offering you riches, will you accept?\n1. Accept\n2. Reject\n3. Fight");
+                        int c = Integer.parseInt(lib.getInput("\n=> "));
+                        lib.clear();
+                        Shop.renderName("Mystery");
+                        if (c == 1){
+                            player.addCoins(1);
+                            lib.getInput("The figured gave you ric- Wait really? One coin? That's it?");
+                            break;
+                        } else if (c == 2) {
+                            lib.getInput("You decide not to accept the figure's offer");
+                            break;
+                        } else if (c == 3){
+                            lib.getInput("You decide to engage in combat with the figure.");
+                            startFight(true);
+                            break;
+                        }
+                    } catch (Exception e) {}
+                }
+                eventHappened = true;
+                break;
+            case 4:
+                while (true){
+                    try {
+                        lib.clear();
+                        Shop.renderName("Mystery");
+                        System.out.println("A strange figure stands before you, offering you riches, will you accept?\n1. Accept\n2. Reject\n3. Fight");
+                        int c = Integer.parseInt(lib.getInput("\n=> "));
+                        lib.clear();
+                        Shop.renderName("Mystery");
+                        if (c == 1){
+                            player.removeCoins(player.getCoins());
+                            lib.getInput("The figure preys on the weakness you display as you figure they'll provide you with riches, stealing all your coins instead.'");
+                            break;
+                        } else if (c == 2) {
+                            lib.getInput("You decide not to accept the figure's offer");
+                            break;
+                        } else if (c == 3){
+                            lib.getInput("You decide to engage in combat with the figure.");
+                            startFight(true);
+                            break;
+                        }
+                    } catch (Exception e) {}
+                }
+                eventHappened = true;
+                break;
+            case 5:
+                while (true){
+                    try {
+                        lib.clear();
+                        Shop.renderName("Mystery");
+                        System.out.println("You come across a park, would you like to stay?\n1. Stay\n2. Leave");
+                        int c = Integer.parseInt(lib.getInput("\n=> "));
+                        lib.clear();
+                        Shop.renderName("Mystery");
+                        if (c == 1){
+                            boolean bad = lib.randint(5) == 0;
+                            if (bad){
+                                player.addRelic(RelicList.relics[16]);
+                                lib.getInput("You decide to stay for a bit, you suddenly feel very tired.");
+                            } else {
+                                player.addRelic(RelicList.relics[15]);
+                                lib.getInput("You decide to stay for a bit, you feel energized.'");
+                            }
+                            break;
+                        } else if (c == 2) {
+                            lib.getInput("You decide not to stay at the park");
+                            break;
+                        }
+                    } catch (Exception e) {}
+                }
+                eventHappened = true;
+                break;
+            }
         }
     }
 }
