@@ -9,7 +9,7 @@ import java.util.Random;
 import java.util.ArrayList;
 import java.io.File;
 
-public class BattleTest {
+public class Roguelike {
     private static String[] options = {"Continue", "Save and quit"};
     private static String saveFile = "save.txt";
     private static String achievementFile = "achievements.txt";
