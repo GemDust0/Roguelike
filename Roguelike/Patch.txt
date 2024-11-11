@@ -1,20 +1,30 @@
-V1.2
+V1.1.0
 
 Notes:
 
-V1.1:
-    - Added a newline after the version print
-    - Added Sacrificial Strike
-    - Added Tank enemy type
-    - Tweaked Attack enemy type max HP
-    - Added heirlooms
+- V1.1.0:
+    - V1.0.1:
+        - Added a newline after the version print
+        - Added Sacrificial Strike
+        - Added Tank enemy type
+        - Tweaked Attack enemy type max HP
+        - Added heirlooms
 
-V1.2:
-    - Added tutorial (delete achievements.txt to trigger)
-    - Changed Bosskiller to achievemnt id 0
-    - Fixed items having all uses upon saving and loading
-    - Added the option to select a random seed
-    - Tweaked Tank health and relics
-    - Tweaked Armor Up, War Cry, Strike, Megastrike, and Sacrificial Strike
-    - Tweaked boss health multiplication factor
-    - Added Masochism and Quick Recovery
+    - V1.0.2:
+        - Added tutorial (delete achievements.txt to trigger)
+        - Changed Bosskiller to achievemnt id 0
+        - Fixed items having all uses upon saving and loading
+        - Added the option to select a random seed
+        - Tweaked Tank health and relics
+        - Tweaked Armor Up, War Cry, Strike, Megastrike, and Sacrificial Strike
+        - Tweaked boss health multiplication factor
+        - Added Masochism and Quick Recovery
+
+    - V1.0.3:
+        - Optimized Quick Recovery's code
+        - Tweaked boss health multiplication factor further
+        - Added rarity colors to the reward menu
+        - Added rarity colors to attack removal menu
+        - Added beacons
+        - Added Torture Chamber
+        - Added mystery events
