@@ -6,4 +6,3 @@ javac Roguelike.java
 :EXIST
 chcp 65001
 java Roguelike
-pause
