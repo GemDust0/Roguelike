@@ -28,3 +28,6 @@ Notes:
         - Added beacons
         - Added Torture Chamber
         - Added mystery events
+
+    - V1.0.4:
+        - Fixed Energized and Tiredness
