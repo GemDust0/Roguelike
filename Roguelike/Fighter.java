@@ -191,6 +191,12 @@ public class Fighter {
                 setMaxHealth(getMaxHealth()-50);
                 setCurHealth(getCurHealth()-50);
                 break;
+            case 15:
+                maxEnergy++;
+                break;
+            case 16:
+                maxEnergy--;
+                break;
         }
         relics.addRelic(relic);
         if (getMaxHealth() >= 500){
