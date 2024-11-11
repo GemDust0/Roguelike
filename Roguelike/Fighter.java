@@ -193,9 +193,11 @@ public class Fighter {
                 break;
             case 15:
                 maxEnergy++;
+                energy++;
                 break;
             case 16:
                 maxEnergy--;
+                energy--;
                 break;
         }
         relics.addRelic(relic);
