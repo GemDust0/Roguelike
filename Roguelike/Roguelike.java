@@ -1,10 +1,3 @@
-/*
-    NOTICE
-        If you want your save to carry over after closing the tab, you need to fork the program and run it in your own CodeHS sandbox.
-        To trigger the tutorial delete achievements.txt
-        Read patch.txt for patch notes
-*/
-
 import java.util.Random;
 import java.util.ArrayList;
 import java.io.File;
@@ -12,7 +5,7 @@ import java.io.File;
 public class Roguelike {
     private static String[] options = {"Continue", "Save and quit"};
     private static String saveFile = "save.txt";
-    private static String achievementFile = "achievements.txt";
+    private static String achievementFile = "achievements.bin";
     private static String patchFile = "patch.txt";
     private static String patch = FileLib.readLine(patchFile, 1);
     
@@ -83,7 +76,7 @@ public class Roguelike {
         lib.clear();
         lib.getInput("Third is your energy, you can only make so many actions in a turn, so if you rely mainly on stuff that doesn't use your turn, keep an eye out for your energy.");
         lib.clear();
-        lib.getInput("Fourth off are attacks, they are all pretty explanatory in what they do, but try experimenting with them to see exactly what their quirks are, the true power of some may be hidden until you use them yourself. Another thing to note is you start with 2 attacks every battle, and draw another one each turn, your turn will automatically end if you have no attacks remaining.");
+        lib.getInput("Fourth off are attacks, they are all pretty explanatory in what they do, but try experimenting with them to see exactly what their quirks are, the true power of some may be hidden until you use them yourself. Another thing to note is you start with 3 attacks every battle, though you can get more through attacks that draw cards or passing your turn.");
         lib.clear();
         lib.getInput("Next up are items, items are a valuable tool, due to having limited uses they are far stronger than attacks, so use them wisely.");
         lib.clear();
@@ -112,6 +105,47 @@ public class Roguelike {
     }
     
     public static void startAdventure(){
+        ArrayList<Integer> characters = new ArrayList<Integer>();
+        int[] requirements = new int[] {
+            -1,
+            1,
+            5,
+            8
+        };
+        
+        String[] charStrings = new String[] {
+            "All-Rounder - No special attributes.",
+            "Berserk - Starts with 50 max hp, Heirloom S, and Masochism.",
+            "Pacifist - All damage you deal is nullfieid, opponents take 10% of your max hp at the end of your turn.",
+            "Economist - All income is doubled, enemies have 50% more hp"
+        };
+        
+        for (int i=0; i<requirements.length; i++){
+            if (Achievements.hasAchievement(requirements[i])){
+                characters.add(i);
+            }
+        }
+        int character = -1;
+        
+        while (character == -1){
+            lib.clear();
+            System.out.println("Characters (enter nothing to go back):\n");
+            for (int i=0; i<requirements.length; i++){
+                if (lib.has(characters, i)){
+                    System.out.println((i+1) + ". " + charStrings[i]);
+                } else {
+                    System.out.println(lib.fore(150, 150, 150) + (i+1) + ". ??? - ???" + lib.reset);
+                }
+            }
+            try {
+                String c = lib.getInput("\n=> ");
+                if (c.equals("")){
+                    return;
+                }
+                character = characters.get(Integer.parseInt(c)-1);
+            } catch (Exception e) {}
+        }
+        
         while (true){
             String seed = "";
             try {
@@ -127,24 +161,59 @@ public class Roguelike {
             }
         }
         
-        player = new Player("You", 100, 5);
+        switch (character){
+            case 0: // All-Rounder
+                player = new Player(75, 5);
+                player.addAttack(AttackList.attacks[0]);
+                player.addAttack(AttackList.attacks[0]);
+                player.addAttack(AttackList.attacks[1]);
+                player.addAttack(AttackList.attacks[2]);
+                player.addAttack(AttackList.attacks[3]);
+                player.addAttack(AttackList.attacks[4]);
+                player.addAttack(AttackList.attacks[5]);
+                break;
+            case 1: // Berserk
+                player = new Player(50, 5);
+                player.addAttack(AttackList.attacks[0]);
+                player.addAttack(AttackList.attacks[0]);
+                player.addAttack(AttackList.attacks[0]);
+                player.addAttack(AttackList.attacks[4]);
+                player.addAttack(AttackList.attacks[5]);
+                player.addAttack(AttackList.attacks[6]);
+                player.addAttack(AttackList.attacks[6]);
+                player.addRelic(RelicList.relics[5]);
+                player.addRelic(RelicList.relics[12]);
+                break;
+            case 2: // Pacifist
+                player = new Player(100, 5);
+                player.addAttack(AttackList.attacks[1]);
+                player.addAttack(AttackList.attacks[1]);
+                player.addAttack(AttackList.attacks[2]);
+                player.addAttack(AttackList.attacks[2]);
+                player.addAttack(AttackList.attacks[2]);
+                player.addAttack(AttackList.attacks[4]);
+                player.addRelic(RelicList.relics[19]);
+            case 3: // Economist
+                player = new Player(75, 5);
+                player.addAttack(AttackList.attacks[0]);
+                player.addAttack(AttackList.attacks[0]);
+                player.addAttack(AttackList.attacks[1]);
+                player.addAttack(AttackList.attacks[2]);
+                player.addAttack(AttackList.attacks[3]);
+                player.addAttack(AttackList.attacks[4]);
+                player.addAttack(AttackList.attacks[5]);
+                player.addRelic(RelicList.relics[24]);
+                break;
+        }
         
-        player.addAttack(AttackList.attacks[0]);
-        player.addAttack(AttackList.attacks[0]);
-        player.addAttack(AttackList.attacks[1]);
-        player.addAttack(AttackList.attacks[2]);
-        player.addAttack(AttackList.attacks[3]);
-        player.addAttack(AttackList.attacks[4]);
-        player.addAttack(AttackList.attacks[5]);
-        
-        map = new Map(10, player);
+        map = new Map(20, player);
         
         adventure();
     }
     
     public static void loadAchievements(){
         String achievementString = FileLib.readLine(achievementFile, 1);
-        for (int i=0; i<achievementString.length(); i++){
+        for (int i=0; i<Achievements.achievementCount() && i<achievementString.length(); i++){
             if (achievementString.charAt(i) == '1'){
                 Achievements.silentAchievement(i);
             }
@@ -162,7 +231,7 @@ public class Roguelike {
                 data += '0';
             }
         }
-        FileLib.writeFile("achievements.txt", data);
+        FileLib.writeFile(achievementFile, data);
     }
     
     public static void loadAdventure(){
@@ -201,14 +270,12 @@ public class Roguelike {
                         relics.add(RelicList.relics[Integer.parseInt(curline)]);
                         break;
                     case 5:
-                        int min = Integer.parseInt(curline.substring(0, curline.indexOf('/')));
-                        int max = Integer.parseInt(curline.substring(curline.indexOf('/')+1, curline.length()));
-                        lib.randint(min, max);
+                        lib.randint(Integer.parseInt(curline));
                 }
             }
         }
         
-        player = new Player("You", Integer.parseInt(data.get(0)), Integer.parseInt(data.get(1)), attacks, items, relics, Integer.parseInt(data.get(2)), Integer.parseInt(data.get(6)));
+        player = new Player(Integer.parseInt(data.get(0)), Integer.parseInt(data.get(1)), attacks, items, relics, Integer.parseInt(data.get(2)), Integer.parseInt(data.get(6)));
         map = new Map(mapSpots, player);
         map.setDepth(Integer.parseInt(data.get(4)));
         map.setCur(Integer.parseInt(data.get(5)));
@@ -257,7 +324,7 @@ public class Roguelike {
         
         while (!quit){
             lib.clear();
-            System.out.println("Seed: " + lib.getSeed());
+            System.out.println("Seed: " + lib.getSeed() + "\nDepth: " + (map.getDepth()+1) + "\n");
             map.displayMap(9, 3);
             System.out.println("----------------");
             for (int i=0; i<options.length; i++){
@@ -299,23 +366,23 @@ public class Roguelike {
     
     public static void startFight(boolean boss){
         Enemy.Type[] typeList = new Enemy.Type[] {Enemy.Type.ATTACK, Enemy.Type.TANK};
-        Enemy enemy = new Enemy(typeList[lib.randint(typeList.length)], map.getDepth(), boss);
+        Enemy enemy = new Enemy(typeList[lib.randint(typeList.length)], map.getDepth(), boss, player);
             
         if (new BattleManager(player, enemy).startBattle()){
             player.clearEffects();
-            int reward = (int)((30*Math.pow(1.5, map.getDepth())) + player.countRelic(2)*5);
-            reward *= 1+(player.countRelic(3)*0.1);
+            int reward = (int)((30*Math.pow(1.5, map.getDepth())) + 5*player.countRelic(2) + 10*player.countRelic(18)); // Additive bonuses
+            reward *= 1+(player.countRelic(3)*0.1); // Multiplicative bonuses
             if (boss){
                 reward = (int)(reward*2.5);
-                Achievements.giveAchievement(4);
+                Achievements.giveAchievement(0);
             }
-            if (reward >= 10000){
+            if (reward >= 1000){
                 Achievements.giveAchievement(8);
             }
-            player.addCoins(reward);
             lib.clear();
             lib.getInput("You beat " + enemy.getName());
             lib.getInput("You received " + reward + " lunas");
+            player.addCoins(reward);
             lib.getInput("You now have " + player.getCoins() + " lunas");
             
             chooseReward();
@@ -324,12 +391,12 @@ public class Roguelike {
     
     public static void chooseReward(){
         ArrayList options = new ArrayList();
-        int rewardCount = 3;
+        int rewardCount = 3 + player.countRelic(17);
         for (int i=0; i<rewardCount; i++){
-            switch (lib.randint(3)){
+            switch ((lib.randint(5)+2)%3){
                 case 0:
                     try {
-                        Shop.Rarity rarity = Shop.generateRarity();
+                        Shop.Rarity rarity = Shop.generateRarity(map.getDepth());
                         ArrayList<Attack> tempAttacks = new ArrayList<Attack>();
                         for (Attack attack : AttackList.attacks){
                     if (attack.getRarity() == rarity && Achievements.hasAchievement(attack.getRequirement())){
@@ -343,7 +410,7 @@ public class Roguelike {
                     break;
                 case 1:
                     try {
-                        Shop.Rarity rarity = Shop.generateRarity();
+                        Shop.Rarity rarity = Shop.generateRarity(map.getDepth());
                         ArrayList<Item> tempItems = new ArrayList<Item>();
                         for (Item item : ItemList.items){
                             if (item.getRarity() == rarity && Achievements.hasAchievement(item.getRequirement())){
@@ -357,7 +424,7 @@ public class Roguelike {
                     break;
                 case 2:
                     try {
-                        Shop.Rarity rarity = Shop.generateRarity();
+                        Shop.Rarity rarity = Shop.generateRarity(map.getDepth());
                         ArrayList<Relic> tempRelics = new ArrayList<Relic>();
                         for (Relic relic : RelicList.relics){
                             if (relic.getRarity() == rarity && Achievements.hasAchievement(relic.getRequirement())){
