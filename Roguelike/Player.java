@@ -7,14 +7,13 @@ public class Player extends Fighter{
     private ItemManager items;
     private int itemsUsed;
     
-    public Player(String name, int maxHealth, int maxEnergy){
-        super(name, maxHealth, maxEnergy);
-        coins = 0;
+    public Player(int maxHealth, int maxEnergy){
+        super("You", maxHealth, maxEnergy);
         items = new ItemManager();
     }
     
-    public Player(String name, int maxHealth, int curHealth, ArrayList<Attack> attacks, ArrayList<Item> items, ArrayList<Relic> relics, int coins, int maxEnergy){
-        super(name, maxHealth, maxEnergy);
+    public Player(int maxHealth, int curHealth, ArrayList<Attack> attacks, ArrayList<Item> items, ArrayList<Relic> relics, int coins, int maxEnergy){
+        super("You", maxHealth, maxEnergy);
         setCurHealth(curHealth);
         for (Attack attack : attacks){
             addAttack(attack);
@@ -30,6 +29,10 @@ public class Player extends Fighter{
     }
     
     public void addCoins(int coins){
+        if (hasRelic(24)){
+            coins *= 2;
+            lib.getInput("Economist doubled the amount of coins you earned");
+        }
         this.coins += coins;
     }
     
