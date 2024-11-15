@@ -42,7 +42,7 @@ public class Attack {
             lib.getInput();
         }
         for (Effect effect : attackSelfEffects){
-            effect.apply(target, user, battle);
+            effect.apply(user, user, battle);
             lib.clear();
             battle.renderBattle();
             lib.getInput();
