@@ -2,7 +2,7 @@ public class RelicList {
     public static Relic[] relics = new Relic[] {
         new Relic("Gluttonous Bag", 0, Shop.Rarity.COMMON, "Allows one free item use", -1),
         new Relic("Cursed Hand", 1, Shop.Rarity.UNIQUE, "Hurts the enemy for 2% of their max hp when they draw a card", -1),
-        new Relic("Pickpocketing 101", 2, Shop.Rarity.COMMON, "Grants 5 bonus coins at the end of a battle", -1),
+        new Relic("Pickpocketing 101", 2, Shop.Rarity.COMMON, "Increased end of battle coin reward by 5", -1),
         new Relic("Lucky Coin", 3, Shop.Rarity.UNCOMMON, "Grants 10% bonus coins at the end of a battle", -1),
         new Relic("Chicken Wing", 4, Shop.Rarity.COMMON, "Increases max hp by 10.", -1),
         new Relic("Heirloom S", 5, Shop.Rarity.RARE, "Start each battle with 5 extra strength.", -1),
@@ -16,6 +16,15 @@ public class RelicList {
         new Relic("Quick Recovery", 13, Shop.Rarity.UNIQUE, "Heal 10% of the damage whenever you take damage", -1),
         new Relic("Torture Chamber", 14, Shop.Rarity.UNIQUE, "Reduce your max health by 50", -2),
         new Relic("Energized", 15, Shop.Rarity.EPIC, "Increase max energy by 1", -1),
-        new Relic("Tiredness", 16, Shop.Rarity.EPIC, "Decrease max energy by 1", -2)
+        new Relic("Tiredness", 16, Shop.Rarity.EPIC, "Decrease max energy by 1", -2),
+        new Relic("Treasure Map", 17, Shop.Rarity.LEGENDARY, "Increase the amount of rewards in the rewards room by 1", -1),
+        new Relic("Pickpocketing 102", 18, Shop.Rarity.RARE, "Increase end of battle coin reward by 10", 7),
+        new Relic("Pacifist", 19, Shop.Rarity.UNIQUE, "Any damage you deal is nullified, opponents take 10% of your max health at the end of your turn.", -2),
+        new Relic("Hot Dog", 20, Shop.Rarity.UNCOMMON, "Increase max hp by 15", -1),
+        new Relic("Hamburger", 21, Shop.Rarity.RARE, "Increases max hp by 25", -1),
+        new Relic("Sundae", 22, Shop.Rarity.LEGENDARY, "Increases max hp by 50", -1),
+        new Relic("Gourmet Meal", 23, Shop.Rarity.STELLAR, "Increases max hp by 100", 5),
+        new Relic("Economist", 24, Shop.Rarity.UNIQUE, "All coins earned are doubled, enemies have 50% more hp", 2),
+        new Relic("Double Trouble", 25, Shop.Rarity.STELLAR, "All damage is doubled", 1)
     };
 }
