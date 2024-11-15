@@ -1,206 +1,80 @@
 import java.util.ArrayList;
 
-public class BattleManager {
+public class AttackManager {
     
-    private static String[] battleOptions = new String[] {"Attack", "Item", "Status", "Enemy Status"};
+    public ArrayList<Attack> attacks;
+    public ArrayList<Attack> unavailableAttacks;
+    public ArrayList<Attack> availableAttacks;
     
-    private Player player;
-    private Enemy enemy;
-    private String messages;
-    private boolean curTurn;
-    
-    private ArrayList<Integer> achievements; // This is for in battle achievments as to not overlap with the effect messages
-    
-    public BattleManager(Player player, Enemy enemy){
-        this.player = player;
-        this.enemy = enemy;
-        this.messages = "";
-        this.achievements = new ArrayList<Integer>();
+    public AttackManager() {
+        attacks = new ArrayList<Attack>();
+        unavailableAttacks = new ArrayList<Attack>();
+        availableAttacks = new ArrayList<Attack>();
     }
     
-    public boolean startBattle(){
-        curTurn = true;
-        
-        for (Fighter fighter : new Fighter[] {player, enemy}){
-            fighter.resetAvailable(3);
-            if (fighter.hasRelic(5)){
-                fighter.addEffect(new Effect(Effect.EffectEnum.STRENGTH, 1, 5*fighter.countRelic(5)));
-            }
-            if (fighter.hasRelic(6)){
-                fighter.addEffect(new Effect(Effect.EffectEnum.ARMOR, 1, 5*fighter.countRelic(6)));
-            }
-            if (fighter.hasRelic(7)){
-                fighter.addEffect(new Effect(Effect.EffectEnum.REGENERATION, 1, 5*fighter.countRelic(7)));
-            }
-            if (fighter.hasRelic(8)){
-                fighter.addEffect(new Effect(Effect.EffectEnum.STRENGTH, 1, 10*fighter.countRelic(8)));
-            }
-            if (fighter.hasRelic(9)){
-                fighter.addEffect(new Effect(Effect.EffectEnum.ARMOR, 1, 10*fighter.countRelic(9)));
-            }
-            if (fighter.hasRelic(10)){
-                fighter.addEffect(new Effect(Effect.EffectEnum.REGENERATION, 1, 10*fighter.countRelic(10)));
-            }
-            if (fighter.hasRelic(11)){
-                fighter.addEffect(new Effect(Effect.EffectEnum.STRENGTH, 1, 20*fighter.countRelic(11)));
-                fighter.addEffect(new Effect(Effect.EffectEnum.ARMOR, 1, 20*fighter.countRelic(11)));
-                fighter.addEffect(new Effect(Effect.EffectEnum.REGENERATION, 1, 20*fighter.countRelic(11)));
-            }
+    public ArrayList<Attack> getAttacks(){
+        return attacks;
+    }
+    
+    public void removeAttack(int index){
+        attacks.remove(index);
+    }
+    
+    public void addAttack(Attack attack){
+        attacks.add(attack);
+    }
+    
+    public void removeAvailableAttack(int index){
+        availableAttacks.remove(index);
+    }
+    
+    public Attack getAvailableAttack(int index){
+        return availableAttacks.get(index);
+    }
+    
+    public ArrayList<Attack> getAvailable(){
+        return availableAttacks;
+    }
+    
+    public void resetAvailable(int maxAmount){
+        // Clear availableAttacks
+        while (availableAttacks.size() > 0){
+            availableAttacks.remove(0);
         }
         
-        while (true){
-            clearMessages();
-            lib.clear();
-            renderBattle();
-            if (curTurn){
-                if (player.hasEffect(Effect.EffectEnum.STUN)){
-                    addMessage("You are stunned");
-                    lib.clear();
-                    renderBattle();
-                    lib.getInput();
-                    clearMessages();
-                    curTurn = !curTurn;
-                    player.countdown(enemy, this);
-                    player.restoreEnergy();
-                } else {
-                    int choice = battleMenu();
-                    if (choice == 1){
-                        if (player.chooseAttack(enemy, this)){
-                            playerEndTurn();
-                        }
-                    } else if (choice == 2){
-                        if (player.chooseItem(enemy, this)){
-                            playerEndTurn();
-                        }
-                    } else if (choice == 3){
-                        lib.clear();
-                        renderBattle();
-                        System.out.println("Effects:");
-                        player.printEffects();
-                        System.out.println("\nRelics:");
-                        player.printRelics();
-                        lib.getInput();
-                    } else if (choice == 4){
-                        lib.clear();
-                        renderBattle();
-                        System.out.println("Enemy effects:");
-                        enemy.printEffects();
-                        System.out.println("\nEnemy relics:");
-                        enemy.printRelics();
-                        lib.getInput();
-                    }
-                }
-            } else {
-                if (enemy.hasEffect(Effect.EffectEnum.STUN)){
-                    clearMessages();
-                    addMessage(enemy.getName() + " is stunned");
-                    lib.clear();
-                    renderBattle();
-                    lib.getInput();
-                    clearMessages();
-                    curTurn = !curTurn;
-                    enemy.countdown(player, this);
-                } else {
-                    clearMessages();
-                    if (enemy.chooseRandomAttack(player, this)){
-                        clearMessages();
-                        curTurn = !curTurn;
-                        enemy.countdown(player, this);
-                        enemy.addAvailable(1);
-                        if (player.hasRelic(1) && !(player.getCurHealth() == 0) && !(enemy.getCurHealth() == 0)){
-                            new Effect(Effect.EffectEnum.PERCENTDAMAGE, 1, 2).apply(player, enemy, this);
-                            lib.clear();
-                            renderBattle();
-                            lib.getInput();
-                        }
-                        clearMessages();
-                        enemy.restoreEnergy();
-                    }
-                }
-            }
-            clearMessages();
-            giveAchievements();
-            if (player.isDead()){
-                return false;
-            } else if (enemy.isDead()){
-                if (player.getCurHealth() == 1){
-                    Achievements.giveAchievement(2);
-                }
-                return true;
-            }
+        // Reset unavailableAttacks
+        while (unavailableAttacks.size() > 0){
+            unavailableAttacks.remove(0);
         }
-    }
-    
-    private void playerEndTurn(){
-        clearMessages();
-        lib.clear();
-        curTurn = !curTurn;
-        player.countdown(enemy, this);
-        player.addAvailable(1);
-        if (!(enemy.getCurHealth() == 0) && !(player.getCurHealth() == 0)){
-            if (enemy.hasRelic(1)){
-                new Effect(Effect.EffectEnum.PERCENTDAMAGE, 1, 2).apply(enemy, player, this);
-                renderBattle();
-                lib.getInput();
-            }
-            if (player.hasRelic(19)){
-                new Effect(Effect.EffectEnum.TRUEDAMAGE, 1, Math.max(player.getMaxHealth()/10, 1)).apply(enemy, enemy, this);
-                lib.clear();
-                renderBattle();
-                lib.getInput();
-            }
+        
+        for (int i=0; i<attacks.size(); i++){
+            unavailableAttacks.add(attacks.get(i));
         }
-        player.resetItemCount();
-        player.restoreEnergy();
-    }
-    
-    private int battleMenu(){
-        ArrayList<Integer> options = new ArrayList<Integer>();
-        options.add(1);
-        if (player.getItems().size() != 0){
-            options.add(2);
-        }
-        options.add(3);
-        options.add(4);
-        while (true){
-            lib.clear();
-            renderBattle();
-            System.out.println("1. Attack");
-            if (options.get(1) == 2){
-                System.out.println("2. Items");
-            }
-            System.out.println((options.size()-1) + ". Status");
-            System.out.println(options.size() + ". Enemy status");
+        
+        for (int i=0; i<maxAmount; i++){
             try {
-                return options.get(Integer.parseInt(lib.getInput("\n=> "))-1);
-            } catch (Exception e){}
-        }
-    }
-    
-    public void addAchievement(int id){
-        achievements.add(id);
-    }
-    
-    public void giveAchievements(){
-        while (true){
-            try {
-                Achievements.giveAchievement(achievements.remove(0));
+                availableAttacks.add(unavailableAttacks.remove(lib.randint(unavailableAttacks.size())));
             } catch (Exception e) {
-                return; // Return if index 0 doesn't exist (empty)
+                return;
             }
         }
     }
     
-    public void renderBattle(){
-        System.out.println(player + "\n\n" + enemy + "\n");
-        System.out.print(messages);
+    public int addAvailable(int amount){
+        int i;
+        for (i=0; i<amount; i++){
+            try {
+                availableAttacks.add(unavailableAttacks.remove(lib.randint(unavailableAttacks.size())));
+            } catch (Exception e) {
+                break;
+            }
+        }
+        return i;
     }
     
-    public void addMessage(String message){
-        messages += message + "\n";
-    }
-    
-    public void clearMessages(){
-        messages = "";
+    public boolean useAttack(int index, Fighter user, Fighter target, BattleManager battle){
+        availableAttacks.get(index).use(user, target, battle);
+        unavailableAttacks.add(availableAttacks.remove(index));
+        return unavailableAttacks.get(unavailableAttacks.size()-1).usesTurn();
     }
 }
