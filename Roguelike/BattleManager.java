@@ -1,203 +1,669 @@
+import java.util.Random;
 import java.util.ArrayList;
+import java.io.File;
 
-public class BattleManager {
+public class BattleTest {
+    private static String[] options = {"Continue", "Save and quit"};
+    private static String saveFile = "save.txt";
+    private static String achievementFile = "achievements.bin";
+    private static String patchFile = "patch.txt";
+    private static String patch = FileLib.readLine(patchFile, 1);
     
-    private static String[] battleOptions = new String[] {"Attack", "Item", "Status", "Enemy Status"};
+    private static Map map;
+    private static Player player;
     
-    private Player player;
-    private Enemy enemy;
-    private String messages;
-    
-    private ArrayList<Integer> achievements; // This is for in battle achievments as to not overlap with the effect messages
-    
-    public BattleManager(Player player, Enemy enemy){
-        this.player = player;
-        this.enemy = enemy;
-        this.messages = "";
-        this.achievements = new ArrayList<Integer>();
-    }
-    
-    public boolean startBattle(){
-        boolean curTurn = true;
-        
-        for (Fighter fighter : new Fighter[] {player, enemy}){
-            fighter.resetAvailable(2);
-            if (fighter.hasRelic(5)){
-                fighter.addEffect(new Effect(Effect.EffectEnum.STRENGTH, 1, 5*fighter.countRelic(5)));
-            }
-            if (fighter.hasRelic(6)){
-                fighter.addEffect(new Effect(Effect.EffectEnum.ARMOR, 1, 5*fighter.countRelic(6)));
-            }
-            if (fighter.hasRelic(7)){
-                fighter.addEffect(new Effect(Effect.EffectEnum.REGENERATION, 1, 5*fighter.countRelic(7)));
-            }
-            if (fighter.hasRelic(8)){
-                fighter.addEffect(new Effect(Effect.EffectEnum.STRENGTH, 1, 10*fighter.countRelic(8)));
-            }
-            if (fighter.hasRelic(9)){
-                fighter.addEffect(new Effect(Effect.EffectEnum.ARMOR, 1, 10*fighter.countRelic(9)));
-            }
-            if (fighter.hasRelic(10)){
-                fighter.addEffect(new Effect(Effect.EffectEnum.REGENERATION, 1, 10*fighter.countRelic(10)));
-            }
-            if (fighter.hasRelic(11)){
-                fighter.addEffect(new Effect(Effect.EffectEnum.STRENGTH, 1, 20*fighter.countRelic(11)));
-                fighter.addEffect(new Effect(Effect.EffectEnum.ARMOR, 1, 20*fighter.countRelic(11)));
-                fighter.addEffect(new Effect(Effect.EffectEnum.REGENERATION, 1, 20*fighter.countRelic(11)));
-            }
+    public static void main(String[] args) {
+        try {
+            loadAchievements();
+        } catch (Exception e){
+            saveAchievements();
+            tutorial();
         }
-        
-        while (true){
-            clearMessages();
-            lib.clear();
-            renderBattle();
-            if (curTurn){
-                if (player.hasEffect(Effect.EffectEnum.STUN)){
-                    addMessage("You are stunned");
-                    lib.clear();
-                    renderBattle();
-                    lib.getInput();
-                    clearMessages();
-                    curTurn = !curTurn;
-                    player.countdown(enemy, this);
-                    player.restoreEnergy();
-                } else {
-                    int choice = battleMenu();
-                    if (choice == 1){
-                        if (player.chooseAttack(enemy, this)){
-                            clearMessages();
-                            lib.clear();
-                            curTurn = !curTurn;
-                            player.countdown(enemy, this);
-                            player.addAvailable(1);
-                            if (enemy.hasRelic(1) && !(enemy.getCurHealth() == 0) && !(player.getCurHealth() == 0)){
-                                new Effect(Effect.EffectEnum.PERCENTDAMAGE, 1, 2).apply(enemy, player, this);
-                                renderBattle();
-                                lib.getInput();
-                            }
-                            player.restoreEnergy();
-                        }
-                    } else if (choice == 2){
-                        if (player.chooseItem(enemy, this)){
-                            clearMessages();
-                            curTurn = !curTurn;
-                            player.countdown(enemy, this);
-                            player.addAvailable(1);
-                            if (enemy.hasRelic(1) && !(enemy.getCurHealth() == 0) && !(player.getCurHealth() == 0)){
-                                new Effect(Effect.EffectEnum.PERCENTDAMAGE, 1, 2).apply(enemy, player, this);
-                                lib.clear();
-                                renderBattle();
-                                lib.getInput();
-                            }
-                            player.restoreEnergy();
-                        }
-                    } else if (choice == 3){
+        boolean quit = false;
+        while (!quit){
+            try{
+                lib.clear();
+                System.out.println(patch);
+                ArrayList<Integer> options = new ArrayList<Integer>();
+                options.add(0);
+                System.out.println("\n1. New Run");
+                if (new File(saveFile).exists()){
+                    options.add(1);
+                    System.out.println("2. Load Run");
+                }
+                options.add(2);
+                System.out.println(options.size() + ". Achievements");
+                options.add(3);
+                System.out.println(options.size() + ". Options");
+                options.add(4);
+                System.out.println(options.size() + ". Save and quit");
+                switch (options.get(Integer.parseInt(lib.getInput("\n=> "))-1)){
+                    case 0:
+                        startAdventure();
+                        break;
+                    case 1:
+                        loadAdventure();
+                        break;
+                    case 2:
                         lib.clear();
-                        renderBattle();
-                        System.out.println("Effects:");
-                        player.printEffects();
-                        System.out.println("\nRelics:");
-                        player.printRelics();
-                        lib.getInput();
-                    } else if (choice == 4){
-                        lib.clear();
-                        renderBattle();
-                        System.out.println("Enemy effects:");
-                        enemy.printEffects();
-                        System.out.println("\nEnemy relics:");
-                        enemy.printRelics();
-                        lib.getInput();
-                    }
+                        Achievements.printAchievements();
+                        break;
+                    case 3:
+                        optionsMenu();
+                        break;
+                    case 4:
+                        saveAchievements();
+                        quit = true;
+                        break;
                 }
-            } else {
-                if (enemy.hasEffect(Effect.EffectEnum.STUN)){
-                    clearMessages();
-                    addMessage(enemy.getName() + " is stunned");
-                    lib.clear();
-                    renderBattle();
-                    lib.getInput();
-                    clearMessages();
-                    curTurn = !curTurn;
-                    enemy.countdown(player, this);
-                } else {
-                    clearMessages();
-                    if (enemy.chooseRandomAttack(player, this)){
-                        clearMessages();
-                        curTurn = !curTurn;
-                        enemy.countdown(player, this);
-                        enemy.addAvailable(1);
-                        if (player.hasRelic(1) && !(player.getCurHealth() == 0) && !(enemy.getCurHealth() == 0)){
-                            new Effect(Effect.EffectEnum.PERCENTDAMAGE, 1, 2).apply(player, enemy, this);
-                            lib.clear();
-                            renderBattle();
-                            lib.getInput();
-                        }
-                        clearMessages();
-                        player.resetItemCount();
-                        enemy.restoreEnergy();
-                    }
-                }
-            }
-            clearMessages();
-            giveAchievements();
-            if (player.isDead()){
-                return false;
-            } else if (enemy.isDead()){
-                if (player.getCurHealth() == 1){
-                    Achievements.giveAchievement(1);
-                }
-                return true;
-            }
-        }
-    }
-    
-    private int battleMenu(){
-        ArrayList<Integer> options = new ArrayList<Integer>();
-        options.add(1);
-        if (player.getItems().size() != 0){
-            options.add(2);
-        }
-        options.add(3);
-        options.add(4);
-        while (true){
-            lib.clear();
-            renderBattle();
-            System.out.println("1. Attack");
-            if (options.get(1) == 2){
-                System.out.println("2. Items");
-            }
-            System.out.println((options.size()-1) + ". Status");
-            System.out.println(options.size() + ". Enemy status");
-            try {
-                return options.get(Integer.parseInt(lib.getInput("\n=> "))-1);
             } catch (Exception e){}
         }
     }
     
-    public void addAchievement(int id){
-        achievements.add(id);
+    public static void tutorial(){
+        lib.clear();
+        lib.getInput("Welcome to Lunallis, a once great world, now overrun by the vile. (Press enter to continue)");
+        lib.clear();
+        lib.getInput("It is your assigned duty to try rid the world of these creatures, and whilst by many deemed impossible, perhaps you will be what changes everyone's mind?");
+        lib.clear();
+        lib.getInput("I applaud you for your courage, and wish you good luck on your travel, I will now be transferring you to the captain.");
+        lib.clear();
+        lib.getInput("Good morning, courageous soldier, willing to give your life to take back the once great world of Lunallis, however no matter your bravery, you will need to be trained on how to survive and thrive in this place.");
+        lib.clear();
+        lib.getInput("First off is the currency, Lunas, or as we prefer to simply call them, coins, is an important thing. Due to the planet's nature some of the few who come are merchants who desire to form a monopoly with the local hellspawn. They will offer you goods in exchange for these so called Lunas, so be sure to obtain a lot of them.");
+        lib.clear();
+        lib.getInput("Second is your hp, if it drops to 0, you die, so keep an eye out.");
+        lib.clear();
+        lib.getInput("Third is your energy, you can only make so many actions in a turn, so if you rely mainly on stuff that doesn't use your turn, keep an eye out for your energy.");
+        lib.clear();
+        lib.getInput("Fourth off are attacks, they are all pretty explanatory in what they do, but try experimenting with them to see exactly what their quirks are, the true power of some may be hidden until you use them yourself. Another thing to note is you start with 3 attacks every battle, though you can get more through attacks that draw cards or passing your turn.");
+        lib.clear();
+        lib.getInput("Next up are items, items are a valuable tool, due to having limited uses they are far stronger than attacks, so use them wisely.");
+        lib.clear();
+        lib.getInput("Lastly are relics, relics provide permanent boosts, so be sure to stock up on a lot of them.");
+        lib.clear();
+        lib.getInput("Also, if you are ever met with an option to choose, look at the option you'd like to choose, enter the number infront of the option, and press enter. And if nothing seems to be happening, press enter aswell, it may just be waiting for you to continue it.");
+        lib.clear();
+        lib.getInput("We will be monitoring your progress, and will be allowing you access to superior gear as you achieve certain goals, we wouldn't want to be handing our strongest stuff to our weakest soldier after all. Your first goal will be to kill a boss, a stronger variant of an enemy, but try gaining all of them to be able to obtain all we have to offer.");
+        lib.clear();
+        lib.getInput("That is all for now soldier, we at LunarCorp wish you good luck on your ventures. Farwell.");
     }
     
-    public void giveAchievements(){
-        while (true){
-            try {
-                Achievements.giveAchievement(achievements.remove(0));
-            } catch (Exception e) {
-                return; // Return if index 0 doesn't exist (empty)
+    public static void optionsMenu(){
+        int c = -1;
+        while (c!=2){
+            c = lib.menu(new String[] {"Reset data", "Back"}, "\n=> ");
+            switch (c){
+                case 1:
+                    FileLib.removeFile(saveFile);
+                    Achievements.reset();
+                    saveAchievements();
+                    lib.getInput("Cleared data");
+                    break;
             }
         }
     }
     
-    public void renderBattle(){
-        System.out.println(player + "\n\n" + enemy + "\n");
-        System.out.print(messages);
+    public static void startAdventure(){
+        ArrayList<Integer> characters = new ArrayList<Integer>();
+        int[] requirements = new int[] {
+            -1,
+            1,
+            5,
+            8
+        };
+        
+        String[] charStrings = new String[] {
+            "All-Rounder - No special attributes.",
+            "Berserk - Starts with 50 max hp, Heirloom S, and Masochism.",
+            "Pacifist - All damage you deal is nullfieid, opponents take 10% of your max hp at the end of your turn.",
+            "Economist - All income is doubled, enemies have 50% more hp"
+        };
+        
+        for (int i=0; i<requirements.length; i++){
+            if (Achievements.hasAchievement(requirements[i])){
+                characters.add(i);
+            }
+        }
+        int character = -1;
+        
+        while (character == -1){
+            lib.clear();
+            System.out.println("Characters (enter nothing to go back):\n");
+            for (int i=0; i<requirements.length; i++){
+                if (lib.has(characters, i)){
+                    System.out.println((i+1) + ". " + charStrings[i]);
+                } else {
+                    System.out.println(lib.fore(150, 150, 150) + (i+1) + ". ??? - ???" + lib.reset);
+                }
+            }
+            try {
+                String c = lib.getInput("\n=> ");
+                if (c.equals("")){
+                    return;
+                }
+                character = characters.get(Integer.parseInt(c)-1);
+            } catch (Exception e) {}
+        }
+        
+        while (true){
+            String seed = "";
+            try {
+                lib.clear();
+                seed = lib.getInput("Seed (enter nothing for a random seed): ");
+                lib.setSeed(Integer.parseInt(seed));
+                break;
+            } catch (Exception e){
+                if (seed.equals("")){
+                    lib.setSeed(lib.randint(2147483647));
+                    break;
+                }
+            }
+        }
+        
+        switch (character){
+            case 0: // All-Rounder
+                player = new Player(75, 5);
+                player.addAttack(AttackList.attacks[0]);
+                player.addAttack(AttackList.attacks[0]);
+                player.addAttack(AttackList.attacks[1]);
+                player.addAttack(AttackList.attacks[2]);
+                player.addAttack(AttackList.attacks[3]);
+                player.addAttack(AttackList.attacks[4]);
+                player.addAttack(AttackList.attacks[5]);
+                break;
+            case 1: // Berserk
+                player = new Player(50, 5);
+                player.addAttack(AttackList.attacks[0]);
+                player.addAttack(AttackList.attacks[0]);
+                player.addAttack(AttackList.attacks[0]);
+                player.addAttack(AttackList.attacks[4]);
+                player.addAttack(AttackList.attacks[5]);
+                player.addAttack(AttackList.attacks[6]);
+                player.addAttack(AttackList.attacks[6]);
+                player.addRelic(RelicList.relics[5]);
+                player.addRelic(RelicList.relics[12]);
+                break;
+            case 2: // Pacifist
+                player = new Player(100, 5);
+                player.addAttack(AttackList.attacks[1]);
+                player.addAttack(AttackList.attacks[1]);
+                player.addAttack(AttackList.attacks[2]);
+                player.addAttack(AttackList.attacks[2]);
+                player.addAttack(AttackList.attacks[2]);
+                player.addAttack(AttackList.attacks[4]);
+                player.addRelic(RelicList.relics[19]);
+            case 3: // Economist
+                player = new Player(75, 5);
+                player.addAttack(AttackList.attacks[0]);
+                player.addAttack(AttackList.attacks[0]);
+                player.addAttack(AttackList.attacks[1]);
+                player.addAttack(AttackList.attacks[2]);
+                player.addAttack(AttackList.attacks[3]);
+                player.addAttack(AttackList.attacks[4]);
+                player.addAttack(AttackList.attacks[5]);
+                player.addRelic(RelicList.relics[24]);
+                break;
+        }
+        
+        map = new Map(20, player);
+        
+        adventure();
     }
     
-    public void addMessage(String message){
-        messages += message + "\n";
+    public static void loadAchievements(){
+        String achievementString = FileLib.readLine(achievementFile, 1);
+        for (int i=0; i<Achievements.achievementCount() && i<achievementString.length(); i++){
+            if (achievementString.charAt(i) == '1'){
+                Achievements.silentAchievement(i);
+            }
+        }
     }
     
-    public void clearMessages(){
-        messages = "";
+    public static void saveAchievements(){
+        String data = "";
+        try {
+            for (boolean achievement : Achievements.getAchievements()){
+                data += achievement ? 1 : 0;
+            }
+        } catch (Exception e){ // If player hasn't been created
+            for (int i=0; i<Achievements.achievementCount(); i++){
+                data += '0';
+            }
+        }
+        FileLib.writeFile(achievementFile, data);
+    }
+    
+    public static void loadAdventure(){
+        ArrayList<String> data = FileLib.readFile(saveFile);
+        ArrayList<Attack> attacks = new ArrayList<Attack>();
+        ArrayList<Item> items = new ArrayList<Item>();
+        ArrayList<Relic> relics = new ArrayList<Relic>();
+        ArrayList<Integer> mapSpots = new ArrayList<Integer>();
+        lib.setSeed(Integer.parseInt(data.get(3)));
+        
+        int curState = 0;
+        for (String curline : data){
+            if (curline.charAt(0) == 'M'){
+                curState = 1;
+            } else if (curline.charAt(0) == 'A'){
+                curState = 2;
+            } else if (curline.charAt(0) == 'I'){
+                curState = 3;
+            } else if (curline.charAt(0) == 'R'){
+                curState = 4;
+            } else if (curline.charAt(0) == 'N'){
+                curState = 5;
+            } else {
+                switch (curState) {
+                    case 1:
+                        mapSpots.add(Integer.parseInt(curline));
+                        break;
+                    case 2:
+                        attacks.add(AttackList.attacks[Integer.parseInt(curline)]);
+                        break;
+                    case 3:
+                        items.add(ItemList.items[Integer.parseInt(curline.substring(0, curline.indexOf("-")))]);
+                        items.get(items.size()-1).setUses(Integer.parseInt(curline.substring(curline.indexOf("-")+1, curline.length())));
+                        break;
+                    case 4:
+                        relics.add(RelicList.relics[Integer.parseInt(curline)]);
+                        break;
+                    case 5:
+                        lib.randint(Integer.parseInt(curline));
+                }
+            }
+        }
+        
+        player = new Player(Integer.parseInt(data.get(0)), Integer.parseInt(data.get(1)), attacks, items, relics, Integer.parseInt(data.get(2)), Integer.parseInt(data.get(6)));
+        map = new Map(mapSpots, player);
+        map.setDepth(Integer.parseInt(data.get(4)));
+        map.setCur(Integer.parseInt(data.get(5)));
+        adventure();
+    }
+    
+    public static void saveAdventure(){
+        saveAchievements();
+        
+        String data = player.getMaxHealth() + "\n" + player.getCurHealth() + "\n" + player.getCoins() + "\n" + lib.getSeed() + "\n" + map.getDepth() + "\n" + map.getCur() + "\n" + player.getMaxEnergy() + "\n";
+        data += "M\n";
+        for (int spot : map.getMap()){
+            data += spot + "\n";
+        }
+        data += "A\n";
+        for (Attack attack : player.getAttacks()){
+            for (int i=0; i<AttackList.attacks.length; i++){
+                if (attack.equals(AttackList.attacks[i])){
+                    data += i + "\n";
+                    break;
+                }
+            }
+        }
+        data += "I\n";
+        for (Item item : player.getItems()){
+            for (int i=0; i<ItemList.items.length; i++){
+                if (item.equals(ItemList.items[i])){
+                    data += i + "-" + item.getUses() + "\n";
+                    break;
+                }
+            }
+        }
+        data += "R\n";
+        for (Relic relic : player.getRelics()){
+            data += relic.getId() + "\n";
+        }
+        data += "N\n";
+        for (String string : lib.getActions()){
+            data += string + "\n";
+        }
+        FileLib.writeFile(saveFile, data);
+    }
+    
+    public static void adventure(){
+        boolean quit = false;
+        
+        while (!quit){
+            lib.clear();
+            System.out.println("Seed: " + lib.getSeed() + "\nDepth: " + (map.getDepth()+1) + "\n");
+            map.displayMap(9, 3);
+            System.out.println("----------------");
+            for (int i=0; i<options.length; i++){
+                System.out.println((i+1) + ". " + options[i]);
+            }
+            try {
+                char c = lib.getInput("\n=> ").charAt(0);
+                if (c == '1'){
+                    switch (map.moveNext()){
+                        case 1:
+                            startFight(false);
+                            break;
+                        case 2:
+                            startFight(true);
+                            break;
+                        case 3:
+                            Shop shop = map.shops[lib.randint(map.shops.length)];
+                            shop.open();
+                            break;
+                        case 4:
+                            beacon();
+                            break;
+                        case 5:
+                            mysteryEvent();
+                            break;
+                    }
+                    
+                    if (player.isDead()){
+                        FileLib.removeFile(saveFile);
+                        return;
+                    }
+                } else if (c == '2'){
+                    saveAdventure();
+                    quit = true;
+                }
+            } catch (Exception e){}
+        }
+    }
+    
+    public static void startFight(boolean boss){
+        Enemy.Type[] typeList = new Enemy.Type[] {Enemy.Type.ATTACK, Enemy.Type.TANK};
+        Enemy enemy = new Enemy(typeList[lib.randint(typeList.length)], map.getDepth(), boss, player);
+            
+        if (new BattleManager(player, enemy).startBattle()){
+            player.clearEffects();
+            int reward = (int)((30*Math.pow(1.5, map.getDepth())) + 5*player.countRelic(2) + 10*player.countRelic(18)); // Additive bonuses
+            reward *= 1+(player.countRelic(3)*0.1); // Multiplicative bonuses
+            if (boss){
+                reward = (int)(reward*2.5);
+                Achievements.giveAchievement(0);
+            }
+            if (reward >= 1000){
+                Achievements.giveAchievement(8);
+            }
+            lib.clear();
+            lib.getInput("You beat " + enemy.getName());
+            lib.getInput("You received " + reward + " lunas");
+            player.addCoins(reward);
+            lib.getInput("You now have " + player.getCoins() + " lunas");
+            
+            chooseReward();
+        }
+    }
+    
+    public static void chooseReward(){
+        ArrayList options = new ArrayList();
+        int rewardCount = 3 + player.countRelic(17);
+        for (int i=0; i<rewardCount; i++){
+            switch ((lib.randint(5)+2)%3){
+                case 0:
+                    try {
+                        Shop.Rarity rarity = Shop.generateRarity(map.getDepth());
+                        ArrayList<Attack> tempAttacks = new ArrayList<Attack>();
+                        for (Attack attack : AttackList.attacks){
+                    if (attack.getRarity() == rarity && Achievements.hasAchievement(attack.getRequirement())){
+                                tempAttacks.add(attack);
+                            }
+                        }
+                        options.add(tempAttacks.get(lib.randint(tempAttacks.size())));
+                    } catch (Exception e) {
+                        i--;
+                    }
+                    break;
+                case 1:
+                    try {
+                        Shop.Rarity rarity = Shop.generateRarity(map.getDepth());
+                        ArrayList<Item> tempItems = new ArrayList<Item>();
+                        for (Item item : ItemList.items){
+                            if (item.getRarity() == rarity && Achievements.hasAchievement(item.getRequirement())){
+                                tempItems.add(item);
+                            }
+                        }
+                        options.add(tempItems.get(lib.randint(tempItems.size())));
+                    } catch (Exception e) {
+                        i--;
+                    }
+                    break;
+                case 2:
+                    try {
+                        Shop.Rarity rarity = Shop.generateRarity(map.getDepth());
+                        ArrayList<Relic> tempRelics = new ArrayList<Relic>();
+                        for (Relic relic : RelicList.relics){
+                            if (relic.getRarity() == rarity && Achievements.hasAchievement(relic.getRequirement())){
+                                if (rarity == Shop.Rarity.UNIQUE){
+                                    // Avoid duplicate uniques
+                                    if (!player.hasRelic(relic.getId())){ // Check if player has relic already
+                                        boolean alreadyIn = false;
+                                        for (int j=0; j<options.size(); j++){ // Check if relic is not an option already
+                                            if (options.get(j) instanceof Relic){
+                                                if (relic.getId() == ((Relic)options.get(j)).getId()){
+                                                    alreadyIn = true;
+                                                    break;
+                                                }
+                                            }
+                                        }
+                                        if (!alreadyIn){
+                                            tempRelics.add(relic);
+                                        }
+                                    }
+                                } else{
+                                    tempRelics.add(relic);
+                                }
+                            }
+                        }
+                        options.add(tempRelics.get(lib.randint(tempRelics.size())));
+                    } catch (Exception e) {
+                        i--;
+                    }
+                    break;
+            }
+        }
+        
+        while (true){
+            try {
+                lib.clear();
+                Shop.renderName("Reward");
+                for (int i=0; i<options.size(); i++){
+                    System.out.print((i+1) + ". ");
+                    if (options.get(i) instanceof Attack){
+                        System.out.print(Shop.getRenCol(((Attack)options.get(i)).getRarity()));
+                    } else if (options.get(i) instanceof Item){
+                        System.out.print(Shop.getRenCol(((Item)options.get(i)).getRarity()));
+                    } else if (options.get(i) instanceof Relic){
+                        System.out.print(Shop.getRenCol(((Relic)options.get(i)).getRarity()));
+                    }
+                    System.out.println(options.get(i) + lib.reset);
+                }
+                int c = Integer.parseInt(lib.getInput("\n=> "))-1;
+                if (options.get(c) instanceof Attack){
+                    player.addAttack((Attack)options.get(c));
+                } else if (options.get(c) instanceof Item){
+                    player.addItem((Item)options.get(c));
+                } else {
+                    player.addRelic((Relic)options.get(c));
+                }
+                return;
+            } catch (Exception e){}
+        }
+    }
+    
+    public static void beacon(){
+        int c = -1;
+        while (true){
+            try {
+                lib.clear();
+                Shop.renderName("Beacon");
+                System.out.println("1. Heal\n2. Reward");
+                c = Integer.parseInt(lib.getInput("\n=> "));
+                if (c == 1 || c == 2){
+                    break;
+                }
+            } catch (Exception e) {}
+        }
+        
+        switch (c){
+            case 1:
+                lib.clear();
+                int heal = (int)Math.ceil(player.getMaxHealth() * (lib.randint(10, 20) * 0.01)); // Heal 10-20% of max hp
+                Shop.renderName("Heal");
+                lib.getInput("The beacon healed you for " + heal + " health");
+                break;
+            case 2:
+                chooseReward();
+                break;
+        }
+    }
+    
+    public static void mysteryEvent(){
+        boolean eventHappened = false;
+        ArrayList<Integer> events = new ArrayList<Integer>();
+        
+        events.add(0);
+        
+        if (!player.hasRelic(14)){
+            events.add(1);
+        }
+        
+        events.add(2);
+        events.add(3);
+        events.add(4);
+        
+        while (!eventHappened){
+            int event = events.get(lib.randint(events.size()));
+            switch (event){
+                case 0:
+                    lib.clear();
+                    Shop.renderName("Mystery");
+                    lib.getInput("There is nothing");
+                    eventHappened = true;
+                    break;
+                case 1:
+                    while (true){
+                        try {
+                            lib.clear();
+                            Shop.renderName("Mystery");
+                            System.out.println("A strange figure stands before you, offering you riches, will you accept?\n1. Accept\n2. Reject\n3. Fight");
+                            int c = Integer.parseInt(lib.getInput("\n=> "));
+                            lib.clear();
+                            Shop.renderName("Mystery");
+                            if (c == 1){
+                                player.addCoins(1000);
+                                player.addRelic(RelicList.relics[14]);
+                                lib.getInput("The figured gave you riches, but at what cost?");
+                            break;
+                        } else if (c == 2) {
+                            lib.getInput("You decide not to accept the figure's offer");
+                            break;
+                        } else if (c == 3){
+                            lib.getInput("You decide to engage in combat with the figure.");
+                            startFight(true);
+                            break;
+                        }
+                    } catch (Exception e) {}
+                }
+                eventHappened = true;
+                break;
+            case 2:
+                while (true){
+                    try {
+                        lib.clear();
+                        Shop.renderName("Mystery");
+                        System.out.println("A strange figure stands before you, offering you riches, will you accept?\n1. Accept\n2. Reject\n3. Fight");
+                        int c = Integer.parseInt(lib.getInput("\n=> "));
+                        lib.clear();
+                        Shop.renderName("Mystery");
+                        if (c == 1){
+                            player.addCoins(1000);
+                            lib.getInput("The figured gave you riches.");
+                            break;
+                        } else if (c == 2) {
+                            lib.getInput("You decide not to accept the figure's offer");
+                            break;
+                        } else if (c == 3){
+                            lib.getInput("You decide to engage in combat with the figure.");
+                            startFight(true);
+                            break;
+                        }
+                    } catch (Exception e) {}
+                }
+                eventHappened = true;
+                break;
+            case 3:
+                while (true){
+                    try {
+                        lib.clear();
+                        Shop.renderName("Mystery");
+                        System.out.println("A strange figure stands before you, offering you riches, will you accept?\n1. Accept\n2. Reject\n3. Fight");
+                        int c = Integer.parseInt(lib.getInput("\n=> "));
+                        lib.clear();
+                        Shop.renderName("Mystery");
+                        if (c == 1){
+                            player.addCoins(1);
+                            lib.getInput("The figured gave you ric- Wait really? One coin? That's it?");
+                            break;
+                        } else if (c == 2) {
+                            lib.getInput("You decide not to accept the figure's offer");
+                            break;
+                        } else if (c == 3){
+                            lib.getInput("You decide to engage in combat with the figure.");
+                            startFight(true);
+                            break;
+                        }
+                    } catch (Exception e) {}
+                }
+                eventHappened = true;
+                break;
+            case 4:
+                while (true){
+                    try {
+                        lib.clear();
+                        Shop.renderName("Mystery");
+                        System.out.println("A strange figure stands before you, offering you riches, will you accept?\n1. Accept\n2. Reject\n3. Fight");
+                        int c = Integer.parseInt(lib.getInput("\n=> "));
+                        lib.clear();
+                        Shop.renderName("Mystery");
+                        if (c == 1){
+                            player.removeCoins(player.getCoins());
+                            lib.getInput("The figure preys on the weakness you display as you figure they'll provide you with riches, stealing all your coins instead.'");
+                            break;
+                        } else if (c == 2) {
+                            lib.getInput("You decide not to accept the figure's offer");
+                            break;
+                        } else if (c == 3){
+                            lib.getInput("You decide to engage in combat with the figure.");
+                            startFight(true);
+                            break;
+                        }
+                    } catch (Exception e) {}
+                }
+                eventHappened = true;
+                break;
+            case 5:
+                while (true){
+                    try {
+                        lib.clear();
+                        Shop.renderName("Mystery");
+                        System.out.println("You come across a park, would you like to stay?\n1. Stay\n2. Leave");
+                        int c = Integer.parseInt(lib.getInput("\n=> "));
+                        lib.clear();
+                        Shop.renderName("Mystery");
+                        if (c == 1){
+                            boolean bad = lib.randint(5) == 0;
+                            if (bad){
+                                player.addRelic(RelicList.relics[16]);
+                                lib.getInput("You decide to stay for a bit, you suddenly feel very tired.");
+                            } else {
+                                player.addRelic(RelicList.relics[15]);
+                                lib.getInput("You decide to stay for a bit, you feel energized.'");
+                            }
+                            break;
+                        } else if (c == 2) {
+                            lib.getInput("You decide not to stay at the park");
+                            break;
+                        }
+                    } catch (Exception e) {}
+                }
+                eventHappened = true;
+                break;
+            }
+        }
     }
 }
