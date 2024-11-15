@@ -142,9 +142,16 @@ public class Fighter {
             for (int i=0; i<attacks.getAvailable().size(); i++){
                 System.out.println((i+1) + ". " + attacks.getAvailable().get(i));
             }
+            System.out.println(attacks.getAvailable().size()+1 + ". Pass");
             try {
                 c = lib.getInput("\n=> ");
-                if (Integer.parseInt(c) > 0 && Integer.parseInt(c) <= attacks.getAvailable().size()){
+                if (Integer.parseInt(c) == attacks.getAvailable().size()+1){
+                    lib.clear();
+                    battle.addMessage("You skipped your turn");
+                    battle.renderBattle();
+                    lib.getInput();
+                    return true;
+                } else if (Integer.parseInt(c) > 0 && Integer.parseInt(c) <= attacks.getAvailable().size()){
                     energy--;
                     return useAttack(Integer.parseInt(c)-1, target, battle) || energy == 0 || chooseAttack(target, battle);
                 }
@@ -199,19 +206,34 @@ public class Fighter {
                 maxEnergy--;
                 energy--;
                 break;
+            case 20:
+                setMaxHealth(getMaxHealth()+15);
+                setCurHealth(getCurHealth()+15);
+                break;
+            case 21:
+                setMaxHealth(getMaxHealth()+25);
+                setCurHealth(getCurHealth()+25);
+                break;
+            case 22:
+                setMaxHealth(getMaxHealth()+50);
+                setCurHealth(getCurHealth()+50);
+                break;
+            case 23:
+                setMaxHealth(getMaxHealth()+100);
+                setCurHealth(getCurHealth()+100);
+                break;
         }
         relics.addRelic(relic);
-        if (getMaxHealth() >= 500){
-            Achievements.giveAchievement(5);
-        }
         if (name.equals("You")){
-            if (countRelic(2) >= 5){
+            if (countRelic(2) >= 3){ // Thief
                 Achievements.giveAchievement(7);
             }
-            
-            if (hasRelic(5) && hasRelic(6) && hasRelic(7)){
+            if (getMaxHealth() >= 300){ // Gluttony
+                Achievements.giveAchievement(5);
+            }
+            if (hasRelic(5) && hasRelic(6) && hasRelic(7)){ // Heirloom Collector
                 Achievements.giveAchievement(9);
-                if (hasRelic(8) && hasRelic(9) && hasRelic(10)){
+                if (hasRelic(8) && hasRelic(9) && hasRelic(10)){ // Heirloom Collector+
                     Achievements.giveAchievement(10);
                 }
             }
