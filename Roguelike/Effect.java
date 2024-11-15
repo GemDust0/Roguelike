@@ -14,7 +14,8 @@ public class Effect {
         PERCENTDAMAGE,
         STUN,
         STUNIMMUNE,
-        ENERGY
+        ENERGY,
+        TRUEDAMAGE
     }
     
     public static Effect.EffectEnum[] stackables = new Effect.EffectEnum[] {
@@ -37,34 +38,7 @@ public class Effect {
         this.duration = duration;
         this.strength = strength;
         this.chance = 100;
-        switch (effect){
-            case DAMAGE:
-                countdownMessage = true;
-                break;
-            case HEAL:
-                countdownMessage = true;
-                break;
-            case POISON:
-                countdownMessage = true;
-                break;
-            case REGENERATION:
-                countdownMessage = true;
-                break;
-            case DRAW:
-                countdownMessage = true;
-                break;
-            case HEALHALFMAX:
-                countdownMessage = true;
-                break;
-            case PERCENTDAMAGE:
-                countdownMessage = true;
-                break;
-            case ENERGY:
-                countdownMessage = true;
-                break;
-            default:
-                countdownMessage = false; // Negated in the try-catch
-        }
+        countdownMessage();
     }
     
     public Effect(EffectEnum effect, Integer duration, int strength, int chance){
@@ -72,26 +46,63 @@ public class Effect {
         this.duration = duration;
         this.strength = strength;
         this.chance = chance;
+        countdownMessage();
+    }
+    
+    public void countdownMessage(){
         switch (effect){
             case DAMAGE:
                 countdownMessage = true;
+                break;
             case HEAL:
                 countdownMessage = true;
+                break;
             case POISON:
                 countdownMessage = true;
+                break;
             case REGENERATION:
                 countdownMessage = true;
+                break;
             case DRAW:
                 countdownMessage = true;
+                break;
             case HEALHALFMAX:
                 countdownMessage = true;
+                break;
             case PERCENTDAMAGE:
                 countdownMessage = true;
+                break;
             case ENERGY:
                 countdownMessage = true;
+                break;
+            case TRUEDAMAGE:
+                countdownMessage = true;
+                break;
             default:
-                countdownMessage = false; // Negated in the try-catch
+                countdownMessage = false;
         }
+    }
+    
+    public void damage(Fighter opponent, Fighter target, BattleManager battle, int amount){
+        amount = Math.max(amount, 0);
+        if (opponent.hasRelic(19)){ // Pacifist
+            amount = 0;
+        }
+        if (opponent.hasRelic(25)){
+            amount *= Math.pow(2, opponent.countRelic(25));
+        } else {
+            amount *= Math.pow(2, target.countRelic(25));
+        }
+        target.damage(amount);
+        battle.addMessage(target.getName() + " took " + amount + " damage");
+        if (amount >= target.getMaxHealth()*3){
+            battle.addAchievement(1);
+        }
+    }
+    
+    public void heal(Fighter opponent, Fighter target, BattleManager battle, int amount){
+        target.heal(amount);
+        battle.addMessage(target.getName() + " healed " + amount + " hp");
     }
     
     public boolean countdown(Fighter opponent, Fighter target, BattleManager battle){
@@ -116,17 +127,11 @@ public class Effect {
                         target.removeEffect(armor);
                     }
                 }
-                amount = Math.max(amount, 0);
-                target.damage(amount);
-                battle.addMessage(target.getName() + " took " + amount + " damage");
-                if (amount >= target.getMaxHealth()*3){
-                    battle.addAchievement(0);
-                }
+                damage(opponent, target, battle, amount);
                 break;
             case HEAL:
                 amount = strength;
-                target.heal(amount);
-                battle.addMessage(target.getName() + " healed " + amount + " hp");
+                heal(opponent, target, battle, amount);
                 break;
             case POISON:
                 amount = strength--;
@@ -138,8 +143,7 @@ public class Effect {
                 break;
             case REGENERATION:
                 amount = strength;
-                target.heal(amount);
-                battle.addMessage(target.getName() + " regenerated " + amount + " health");
+                heal(opponent, target, battle, amount);
                 break;
             case DRAW:
                 amount = strength;
@@ -155,18 +159,20 @@ public class Effect {
                 break;
             case HEALHALFMAX:
                 amount = (int)Math.ceil(target.getMaxHealth()/2.0);
-                target.heal(amount);
-                battle.addMessage(target.getName() + " healed " + amount + " hp");
+                heal(opponent, target, battle, amount);
                 break;
             case PERCENTDAMAGE:
-                amount = Math.max((int)(target.getMaxHealth()*(strength/100.0)), 1);
-                target.damage(amount);
-                battle.addMessage(target.getName() + " took " + amount + " damage");
+                amount = Math.max((int)(target.getMaxHealth()*strength/100.0), 1);
+                damage(opponent, target, battle, amount);
                 break;
             case ENERGY:
                 amount = strength;
                 target.restoreEnergy(amount);
                 battle.addMessage(target.getName() + " restored " + amount + " energy");
+                break;
+            case TRUEDAMAGE:
+                amount = strength;
+                damage(opponent, target, battle, amount);
                 break;
         }
         if (duration != null){
@@ -251,6 +257,9 @@ public class Effect {
                     newEffect.countdown(user, target, battle);
                     break;
                 case ENERGY:
+                    newEffect.countdown(user, target, battle);
+                    break;
+                case TRUEDAMAGE:
                     newEffect.countdown(user, target, battle);
                     break;
             }
