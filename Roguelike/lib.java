@@ -66,7 +66,7 @@ public class lib {
         if (max <= min){
             return -1;
         }
-        actions.add(min + "/" + max);
+        actions.add(Integer.toString(max-min));
         return rng.nextInt(max-min)+min;
     }
     
@@ -86,5 +86,14 @@ public class lib {
     
     public static ArrayList<String> getActions(){
         return actions;
+    }
+    
+    public static boolean has(ArrayList<Integer> list, int item){
+        for (int curItem : list){
+            if (curItem == item){
+                return true;
+            }
+        }
+        return false;
     }
 }
