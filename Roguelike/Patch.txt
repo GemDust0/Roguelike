@@ -1,33 +1,51 @@
-V1.1.0
+V1.1
 
 Notes:
 
-- V1.1.0:
-    - V1.0.1:
-        - Added a newline after the version print
-        - Added Sacrificial Strike
-        - Added Tank enemy type
-        - Tweaked Attack enemy type max HP
-        - Added heirlooms
+- V1.1:
+    - Added a newline after the version print
+    - Added Sacrificial Strike
+    - Added Tank enemy type
+    - Tweaked Attack enemy type max HP
+    - Added Heirlooms
+    - Added tutorial
+    - Changed Bosskiller to achievemnt id 0
+    - Fixed items having all uses upon saving and loading
+    - Added the option to select a random seed
+    - Tweaked Tank health and relics
+    - Tweaked Armor Up, War Cry, Strike, Megastrike, and Sacrificial Strike
+    - Tweaked boss health multiplication factor
+    - Added Masochism and Quick Recovery
+    - Optimized Quick Recovery's code
+    - Tweaked boss health multiplication factor further
+    - Added rarity colors to the reward menu
+    - Added rarity colors to attack removal menu
+    - Added beacons
+    - Added Torture Chamber
+    - Added mystery events
+    - Fixed Energized and Tiredness
 
-    - V1.0.2:
-        - Added tutorial (delete achievements.txt to trigger)
-        - Changed Bosskiller to achievemnt id 0
-        - Fixed items having all uses upon saving and loading
-        - Added the option to select a random seed
-        - Tweaked Tank health and relics
-        - Tweaked Armor Up, War Cry, Strike, Megastrike, and Sacrificial Strike
-        - Tweaked boss health multiplication factor
-        - Added Masochism and Quick Recovery
-
-    - V1.0.3:
-        - Optimized Quick Recovery's code
-        - Tweaked boss health multiplication factor further
-        - Added rarity colors to the reward menu
-        - Added rarity colors to attack removal menu
-        - Added beacons
-        - Added Torture Chamber
-        - Added mystery events
-
-    - V1.0.4:
-        - Fixed Energized and Tiredness
+- V1.2:
+    - Added Pass option to attack selection menu
+    - Removed automatic turn end upon having no attacks
+    - Changed starting hand size to 3
+    - Changed tutorial text
+    - Changed the way damage and heal is applied
+    - Added dynamic rarity odds
+    - Added a Depth display
+    - Tweaked map size
+    - Added Treasure Map, Pickpocketing 102, Pacifist, Hamburger, Sundae, Gourmet Meal, Economist, and Double Trouble relics
+    - Added Shield item
+    - Fixed glutton achievement being rewarded for the enemy meeting the requirement
+    - Changed the Thief, Glutton, and Stonks achievements requirement
+    - Changed attack:item:relic ratio in reward room from 1:1:1 to 2:1:2
+    - Added character select screen
+    - Added All-Rounder, Berserk, Pacifist, and Economist characters
+    - Fixed loading achievements causing the tutorial to play if it contains an incorrect number of achievements
+    - Tweaked enemy attacks/relics
+    - Optimized the way the RNG state is saved to reduce storage usage
+    - Added dynamic enemy difficulty
+    - Fixed achievements with an id < 5 not being awarded properly
+    - Reduced Megastrike, Sacrificial Strike damage
+    - Rudeced Sacrifial Strike self damage
+    - Changed achievements.txt to achievements.bin to reduce storage usage
