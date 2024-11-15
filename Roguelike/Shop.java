@@ -11,6 +11,20 @@ public class Shop {
         STELLAR,
         UNIQUE
     }
+    
+    private static int[][] odds = new int[][] {
+        new int[] {69, 20, 5, 5, 1, 0, 0},
+        new int[] {60, 25, 5, 7, 3, 0, 0},
+        new int[] {50, 30, 5, 10, 5, 0, 0},
+        new int[] {35, 34, 5, 15, 10, 1, 0},
+        new int[] {25, 30, 5, 20, 15, 5, 0},
+        new int[] {15, 29, 5, 25, 20, 5, 1},
+        new int[] {10, 25, 5, 30, 20, 9, 1},
+        new int[] {10, 20, 5, 25, 25, 13, 2},
+        new int[] {10, 15, 5, 20, 30, 15, 5},
+        new int[] {10, 15, 5, 15, 25, 25, 5}
+    };
+    
     private static double priceFactor = 1.4;
     private static double depthFactor = 1.6;
     
@@ -33,23 +47,19 @@ public class Shop {
         this.map = map;
     }
     
-    public static Rarity generateRarity(){
-        int num = lib.randint(100);
-        if (num < 1){
-            return Rarity.STELLAR;
-        } else if (num < 6){
-            return Rarity.LEGENDARY;
-        } else if (num < 16) {
-            return Rarity.EPIC;
-        } else if (num < 31) {
-            return Rarity.RARE;
-        } else if (num < 46) {
-            return Rarity.UNIQUE;
-        } else if (num < 71) {
-            return Rarity.UNCOMMON;
-        } else {
-            return Rarity.COMMON;
+    public static Rarity generateRarity(int depth){
+        Rarity[] rarities = new Rarity[] {Rarity.COMMON, Rarity.UNCOMMON, Rarity.UNIQUE, Rarity.RARE, Rarity.EPIC, Rarity.LEGENDARY, Rarity.STELLAR};
+        int rand = lib.randint(100);
+        int curNum = 0;
+        int[] curOdds = odds[Math.min(10, depth)]; 
+        
+        for (int i=0; i<rarities.length; i++){
+            curNum += curOdds[i];
+            if (rand < curNum){
+                return rarities[i];
+            }
         }
+        return null;
     }
     
     public int getPriceMult(Rarity rarity){
@@ -102,7 +112,7 @@ public class Shop {
         relics = new ArrayList<Relic>();
         for (int i=0; i<attackCount; i++){
             try {
-                Rarity rarity = generateRarity();
+                Rarity rarity = generateRarity(map.getDepth());
                 ArrayList<Attack> tempAttacks = new ArrayList<Attack>();
                 for (Attack attack : AttackList.attacks){
                     if (attack.getRarity() == rarity && Achievements.hasAchievement(attack.getRequirement())){
@@ -116,7 +126,7 @@ public class Shop {
         }
         for (int i=0; i<itemCount; i++){
             try {
-                Rarity rarity = generateRarity();
+                Rarity rarity = generateRarity(map.getDepth());
                 ArrayList<Item> tempItems = new ArrayList<Item>();
                 for (Item item : ItemList.items){
                     if (item.getRarity() == rarity && Achievements.hasAchievement(item.getRequirement())){
@@ -130,7 +140,7 @@ public class Shop {
         }
         for (int i=0; i<relicCount; i++){
             try {
-                Rarity rarity = generateRarity();
+                Rarity rarity = generateRarity(map.getDepth());
                 ArrayList<Relic> tempRelics = new ArrayList<Relic>();
                 for (Relic relic : RelicList.relics){
                     if (relic.getRarity() == rarity  && Achievements.hasAchievement(relic.getRequirement())){
@@ -205,8 +215,9 @@ public class Shop {
                 if (relics.size() != 0){
                     menus.add(2);
                     System.out.println(menus.size() + ". Relics");
-                } else if (menus.size() == 0){
-                    Achievements.giveAchievement(2);
+                }
+                if (menus.size() == 0){
+                    Achievements.giveAchievement(3);
                     lib.clear();
                     renderName(name);
                 }
@@ -347,7 +358,7 @@ public class Shop {
             int c=-1;
             try {
                 if (player.getAttacks().size() <= 1){
-                    Achievements.giveAchievement(3);
+                    Achievements.giveAchievement(4);
                     return;
                 }
                 lib.clear();
