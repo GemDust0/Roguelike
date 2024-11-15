@@ -57,7 +57,7 @@ public class Map {
     public int moveNext(){
         curPos++;
         if (curPos >= map.size()){
-            generateMap(map.size());
+            generateMap(map.size()+1);
             return -1;
         }
         map.set(curPos-1, 0);
