@@ -24,7 +24,7 @@ public class RelicList {
         new Relic("Hamburger", 21, Shop.Rarity.RARE, "Increases max hp by 25", -1),
         new Relic("Sundae", 22, Shop.Rarity.LEGENDARY, "Increases max hp by 50", -1),
         new Relic("Gourmet Meal", 23, Shop.Rarity.STELLAR, "Increases max hp by 100", 5),
-        new Relic("Economist", 24, Shop.Rarity.UNIQUE, "All coins earned are doubled, enemies have 50% more hp", 2),
-        new Relic("Double Trouble", 25, Shop.Rarity.STELLAR, "All damage is doubled", 1)
+        new Relic("Economist", 24, Shop.Rarity.UNIQUE, "All coins earned are doubled, enemies have 50% more hp", -2),
+        new Relic("Double Trouble", 25, Shop.Rarity.STELLAR, "All damage is doubled", -1)
     };
 }
