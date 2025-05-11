@@ -1,6 +1,6 @@
 import java.util.ArrayList;
 
-public class Item {
+public class Item implements Comparable<Item> {
     private String name;
     private String description;
     private ArrayList<Effect> attackTargetEffects;
@@ -46,18 +46,12 @@ public class Item {
         attackSelfEffects.add(effect);
     }
     
-    public boolean use(Fighter user, Fighter target, BattleManager battle){
+    public boolean use(Fighter user, Fighter target){
         for (Effect effect : attackTargetEffects){
-            effect.apply(user, target, battle);
-            lib.clear();
-            battle.renderBattle();
-            lib.getInput();
+            effect.apply(user, target);
         }
         for (Effect effect : attackSelfEffects){
-            effect.apply(user, user, battle);
-            lib.clear();
-            battle.renderBattle();
-            lib.getInput();
+            effect.apply(user, user);
         }
         if (uses != null){
             uses--;
@@ -106,6 +100,11 @@ public class Item {
     
     public boolean getUsesTurn(){
         return usesTurn;
+    }
+    
+    @Override
+    public int compareTo(Item o){
+        return name.compareTo(o.getName());
     }
     
     public String toString(){

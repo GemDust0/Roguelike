@@ -73,16 +73,10 @@ public class EffectManager {
         }
     }
     
-    public void countdown(Fighter opponent, Fighter target, BattleManager battle){
+    public void countdown(Fighter opponent, Fighter target){
         for (int i=0; i<effects.size(); i++){
             // If effect removed; decrease index by 1
-            boolean hasMessage = effects.get(i).hasMessage();
-            i -= effects.get(i).countdown(opponent, target, battle) ? 1 : 0;
-            if (hasMessage){
-                lib.clear();
-                battle.renderBattle();
-                lib.getInput();
-            }
+            i -= effects.get(i).countdown(opponent, target) ? 1 : 0;
         }
     }
 }

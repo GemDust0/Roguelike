@@ -25,8 +25,9 @@ public class Shop {
         new int[] {10, 15, 5, 15, 25, 25, 5}
     };
     
-    private static double priceFactor = 1.4;
-    private static double depthFactor = 1.6;
+    private static double priceFactor = 1.6;
+    private static double depthFactor = 1.8;
+    private static double restockFactor = 1.4;
     
     private Player player;
     private String name;
@@ -37,6 +38,7 @@ public class Shop {
     private ArrayList<Item> items;
     private ArrayList<Relic> relics;
     private Map map;
+    private int restocks;
     
     public Shop(Player player, String name, int attackCount, int itemCount, int relicCount, Map map){
         this.player = player;
@@ -45,6 +47,7 @@ public class Shop {
         this.itemCount = itemCount;
         this.relicCount = relicCount;
         this.map = map;
+        this.restocks = 0;
     }
     
     public static Rarity generateRarity(int depth){
@@ -89,7 +92,7 @@ public class Shop {
             case UNCOMMON:
                 return lib.fore(0, 255, 0);
             case RARE:
-                return lib.fore(0, 0, 255);
+                return lib.fore(60, 130, 255);
             case EPIC:
                 return lib.fore(255, 0, 255);
             case LEGENDARY:
@@ -103,10 +106,11 @@ public class Shop {
     }
     
     public int calculatePrice(){
-        return (int)(25*Math.pow(priceFactor, Math.pow(depthFactor, map.getDepth())-1));
+        return (int)(25*Math.pow(priceFactor, Math.pow(depthFactor, map.getDepth())-1) * Math.pow(restockFactor, restocks));
     }
     
     public void restock(){
+        restocks++;
         attacks = new ArrayList<Attack>();
         items = new ArrayList<Item>();
         relics = new ArrayList<Relic>();

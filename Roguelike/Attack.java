@@ -34,18 +34,12 @@ public class Attack {
         attackSelfEffects.add(effect);
     }
     
-    public void use(Fighter user, Fighter target, BattleManager battle){
+    public void use(Fighter user, Fighter target){
         for (Effect effect : attackTargetEffects){
-            effect.apply(user, target, battle);
-            lib.clear();
-            battle.renderBattle();
-            lib.getInput();
+            effect.apply(user, target);
         }
         for (Effect effect : attackSelfEffects){
-            effect.apply(user, user, battle);
-            lib.clear();
-            battle.renderBattle();
-            lib.getInput();
+            effect.apply(user, user);
         }
     }
     

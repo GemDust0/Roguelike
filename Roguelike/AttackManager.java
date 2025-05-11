@@ -72,8 +72,8 @@ public class AttackManager {
         return i;
     }
     
-    public boolean useAttack(int index, Fighter user, Fighter target, BattleManager battle){
-        availableAttacks.get(index).use(user, target, battle);
+    public boolean useAttack(int index, Fighter user, Fighter target){
+        availableAttacks.get(index).use(user, target);
         unavailableAttacks.add(availableAttacks.remove(index));
         return unavailableAttacks.get(unavailableAttacks.size()-1).usesTurn();
     }

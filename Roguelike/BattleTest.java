@@ -2,7 +2,7 @@ import java.util.Random;
 import java.util.ArrayList;
 import java.io.File;
 
-public class Roguelike {
+public class BattleTest {
     private static String[] options = {"Continue", "Save and quit"};
     private static String saveFile = "save.txt";
     private static String achievementFile = "achievements.bin";
@@ -56,7 +56,7 @@ public class Roguelike {
                         quit = true;
                         break;
                 }
-            } catch (Exception e){}
+            } catch (Exception e){throw e;}
         }
     }
     
@@ -110,14 +110,18 @@ public class Roguelike {
             -1,
             1,
             5,
-            8
+            8,
+            11,
+            12
         };
         
         String[] charStrings = new String[] {
             "All-Rounder - No special attributes.",
             "Berserk - Starts with 50 max hp, Heirloom S, and Masochism.",
             "Pacifist - All damage you deal is nullfieid, opponents take 10% of your max hp at the end of your turn.",
-            "Economist - All income is doubled, enemies have 50% more hp"
+            "Economist - All income is doubled, enemies have 50% more hp",
+            "Poisoneer - Poison yourself and your opponent for better or worse",
+            "Magician - Master of the draw"
         };
         
         for (int i=0; i<requirements.length; i++){
@@ -142,7 +146,10 @@ public class Roguelike {
                 if (c.equals("")){
                     return;
                 }
-                character = characters.get(Integer.parseInt(c)-1);
+                character = Integer.parseInt(c)-1;
+                if (!(character >= 0 && character <= charStrings.length)){
+                    character = -1;
+                }
             } catch (Exception e) {}
         }
         
@@ -163,21 +170,21 @@ public class Roguelike {
         
         switch (character){
             case 0: // All-Rounder
-                player = new Player(75, 5);
+                player = new Player(75, 2);
                 player.addAttack(AttackList.attacks[0]);
                 player.addAttack(AttackList.attacks[0]);
                 player.addAttack(AttackList.attacks[1]);
                 player.addAttack(AttackList.attacks[2]);
                 player.addAttack(AttackList.attacks[3]);
-                player.addAttack(AttackList.attacks[4]);
+                player.addAttack(AttackList.attacks[15]);
                 player.addAttack(AttackList.attacks[5]);
                 break;
             case 1: // Berserk
-                player = new Player(50, 5);
+                player = new Player(50, 2);
                 player.addAttack(AttackList.attacks[0]);
                 player.addAttack(AttackList.attacks[0]);
                 player.addAttack(AttackList.attacks[0]);
-                player.addAttack(AttackList.attacks[4]);
+                player.addAttack(AttackList.attacks[15]);
                 player.addAttack(AttackList.attacks[5]);
                 player.addAttack(AttackList.attacks[6]);
                 player.addAttack(AttackList.attacks[6]);
@@ -185,24 +192,51 @@ public class Roguelike {
                 player.addRelic(RelicList.relics[12]);
                 break;
             case 2: // Pacifist
-                player = new Player(100, 5);
+                player = new Player(100, 2);
                 player.addAttack(AttackList.attacks[1]);
                 player.addAttack(AttackList.attacks[1]);
                 player.addAttack(AttackList.attacks[2]);
                 player.addAttack(AttackList.attacks[2]);
                 player.addAttack(AttackList.attacks[2]);
-                player.addAttack(AttackList.attacks[4]);
+                player.addAttack(AttackList.attacks[15]);
                 player.addRelic(RelicList.relics[19]);
+                break;
             case 3: // Economist
-                player = new Player(75, 5);
+                player = new Player(75, 2);
                 player.addAttack(AttackList.attacks[0]);
                 player.addAttack(AttackList.attacks[0]);
                 player.addAttack(AttackList.attacks[1]);
                 player.addAttack(AttackList.attacks[2]);
                 player.addAttack(AttackList.attacks[3]);
-                player.addAttack(AttackList.attacks[4]);
+                player.addAttack(AttackList.attacks[15]);
                 player.addAttack(AttackList.attacks[5]);
                 player.addRelic(RelicList.relics[24]);
+                break;
+            case 4: // Poisoneer
+                player = new Player(90, 2);
+                player.addAttack(AttackList.attacks[0]);
+                player.addAttack(AttackList.attacks[0]);
+                player.addAttack(AttackList.attacks[7]);
+                player.addAttack(AttackList.attacks[7]);
+                player.addAttack(AttackList.attacks[7]);
+                player.addAttack(AttackList.attacks[13]);
+                player.addAttack(AttackList.attacks[14]);
+                player.addRelic(RelicList.relics[28]);
+                player.addRelic(RelicList.relics[30]);
+                break;
+            case 5: // Magician
+                player = new Player(75, 5);
+                player.addAttack(AttackList.attacks[0]);
+                player.addAttack(AttackList.attacks[0]);
+                player.addAttack(AttackList.attacks[0]);
+                player.addAttack(AttackList.attacks[4]);
+                player.addAttack(AttackList.attacks[15]);
+                player.addAttack(AttackList.attacks[15]);
+                player.addAttack(AttackList.attacks[6]);
+                player.addAttack(AttackList.attacks[6]);
+                player.addAttack(AttackList.attacks[6]);
+                player.addRelic(RelicList.relics[36]);
+                player.addRelic(RelicList.relics[32]);
                 break;
         }
         
@@ -365,12 +399,13 @@ public class Roguelike {
     }
     
     public static void startFight(boolean boss){
-        Enemy.Type[] typeList = new Enemy.Type[] {Enemy.Type.ATTACK, Enemy.Type.TANK};
+        Enemy.Type[] typeList = new Enemy.Type[] {Enemy.Type.ATTACK, Enemy.Type.TANK, Enemy.Type.POISON};
         Enemy enemy = new Enemy(typeList[lib.randint(typeList.length)], map.getDepth(), boss, player);
-            
-        if (new BattleManager(player, enemy).startBattle()){
+        BattleManager.InitBattleManager(player, enemy);
+        
+        if (BattleManager.startBattle()){
             player.clearEffects();
-            int reward = (int)((30*Math.pow(1.5, map.getDepth())) + 5*player.countRelic(2) + 10*player.countRelic(18)); // Additive bonuses
+            int reward = (int)((30*Math.pow(1.6, map.getDepth())) + 5*player.countRelic(2) + 10*player.countRelic(18)); // Additive bonuses
             reward *= 1+(player.countRelic(3)*0.1); // Multiplicative bonuses
             if (boss){
                 reward = (int)(reward*2.5);
@@ -545,9 +580,9 @@ public class Roguelike {
                             lib.clear();
                             Shop.renderName("Mystery");
                             if (c == 1){
+                                lib.getInput("The figure gave you riches, but at what cost?");
                                 player.addCoins(1000);
                                 player.addRelic(RelicList.relics[14]);
-                                lib.getInput("The figured gave you riches, but at what cost?");
                             break;
                         } else if (c == 2) {
                             lib.getInput("You decide not to accept the figure's offer");
@@ -571,8 +606,8 @@ public class Roguelike {
                         lib.clear();
                         Shop.renderName("Mystery");
                         if (c == 1){
+                            lib.getInput("The figure gave you riches.");
                             player.addCoins(1000);
-                            lib.getInput("The figured gave you riches.");
                             break;
                         } else if (c == 2) {
                             lib.getInput("You decide not to accept the figure's offer");
@@ -596,8 +631,8 @@ public class Roguelike {
                         lib.clear();
                         Shop.renderName("Mystery");
                         if (c == 1){
+                            lib.getInput("The figure gave you ric- Wait really? One coin? That's it?");
                             player.addCoins(1);
-                            lib.getInput("The figured gave you ric- Wait really? One coin? That's it?");
                             break;
                         } else if (c == 2) {
                             lib.getInput("You decide not to accept the figure's offer");

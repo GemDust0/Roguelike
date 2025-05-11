@@ -1,4 +1,4 @@
-V1.1
+V1.4
 
 Notes:
 
@@ -49,3 +49,23 @@ Notes:
     - Reduced Megastrike, Sacrificial Strike damage
     - Rudeced Sacrifial Strike self damage
     - Changed achievements.txt to achievements.bin to reduce storage usage
+
+- V1.3:
+    - Refactored the way BattleManager is handled in the code
+    - Added Cat, Venomous Skin, Poison Heal, Poisonous Strength, and Blood Poisoning, Golden Blood relics
+    - Added Injection and Venomous Bite attacks
+    - Added Poison type enemy
+    - Added Poisoneer character
+
+- V1.4:
+    - Added relics Headstart, Sleight of Hand, Strong Draw, and Hat Trick
+    - Added Attacks Quick Draw
+    - Nerfed Pot of Greed to EPIC rarity
+    - Added Character Magician
+    - Added achievement "A Myriad of Options"
+    - Fixed reloading a save adding the stats of relics again
+    - Fixed certain situations displaying wrong
+    - Other minor bug fixes
+    - Changed several scalars
+    - Added restocking making the shop more expensive
+    - Made Explorer achievement easier to achieve

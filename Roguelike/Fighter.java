@@ -52,7 +52,7 @@ public class Fighter {
         health.damage(amount);
         if (amount >= 0){
             if (hasRelic(12)){
-                addEffect(new Effect(Effect.EffectEnum.STRENGTH, 1, 1));
+                addEffect(new Effect(Effect.EffectEnum.STRENGTH, null, countRelic(12)));
             }
             if (hasRelic(13) && getCurHealth() > 0){
                 heal((int)Math.ceil(amount*0.1));
@@ -88,16 +88,22 @@ public class Fighter {
         return attacks.getAttacks();
     }
     
-    public void addAttack(Attack attack){
-        attacks.addAttack(attack);
+    public int getAttackCount(){
+        return attacks.getAttacks().size();
     }
     
-    public boolean useAttack(int index, Fighter target, BattleManager battle){
-        battle.addMessage(name + " used " + attacks.getAvailableAttack(index).getName());
-        lib.clear();
-        battle.renderBattle();
-        lib.getInput();
-        return attacks.useAttack(index, this, target, battle);
+    public void addAttack(Attack attack){
+        attacks.addAttack(attack);
+        if (name != null && name.equals("You")){
+            if (getAttackCount() >= 50){
+                Achievements.giveAchievement(12);
+            }
+        }
+    }
+    
+    public boolean useAttack(int index, Fighter target){
+        BattleManager.addMessage(name + " used " + attacks.getAvailableAttack(index).getName());
+        return attacks.useAttack(index, this, target);
     }
     
     public void removeAttack(int index){
@@ -128,32 +134,32 @@ public class Fighter {
         return effects.getEffectStrength(effect);
     }
     
-    public void countdown(Fighter opponent, BattleManager battle){
-        effects.countdown(opponent, this, battle);
+    public void countdown(Fighter opponent){
+        effects.countdown(opponent, this);
     }
     
-    public boolean chooseAttack(Fighter target, BattleManager battle){
+    public boolean chooseAttack(Fighter target){
         String c = null;
-        battle.clearMessages();
+        BattleManager.clearMessages();
         while (true){
             lib.clear();
-            battle.renderBattle();
+            BattleManager.renderBattle();
             System.out.println("Pick a move, enter nothing to return to the menu:");
             for (int i=0; i<attacks.getAvailable().size(); i++){
                 System.out.println((i+1) + ". " + attacks.getAvailable().get(i));
             }
             System.out.println(attacks.getAvailable().size()+1 + ". Pass");
             try {
+                if (target.getCurHealth() == 0){
+                    return true;
+                }
                 c = lib.getInput("\n=> ");
                 if (Integer.parseInt(c) == attacks.getAvailable().size()+1){
-                    lib.clear();
-                    battle.addMessage("You skipped your turn");
-                    battle.renderBattle();
-                    lib.getInput();
+                    BattleManager.addMessage("You skipped your turn");
                     return true;
                 } else if (Integer.parseInt(c) > 0 && Integer.parseInt(c) <= attacks.getAvailable().size()){
                     energy--;
-                    return useAttack(Integer.parseInt(c)-1, target, battle) || energy == 0 || chooseAttack(target, battle);
+                    return useAttack(Integer.parseInt(c)-1, target) || energy == 0 || chooseAttack(target);
                 }
             } catch (Exception e){
                 if (c.equals("")){
@@ -163,9 +169,12 @@ public class Fighter {
         }
     }
     
-    public boolean chooseRandomAttack(Fighter target, BattleManager battle){
+    public boolean chooseRandomAttack(Fighter target){
         energy--;
-        return useAttack(lib.randint(attacks.getAvailable().size()), target, battle) || energy == 0;
+        if (target.getCurHealth() == 0){
+            return true;
+        }
+        return useAttack(lib.randint(attacks.getAvailable().size()), target) || energy == 0;
     }
     
     public void printEffects(){
@@ -177,6 +186,9 @@ public class Fighter {
     }
     
     public int addAvailable(int amount){
+        if (hasRelic(34)){
+            addEffect(new Effect(Effect.EffectEnum.STRENGTH, null, amount));
+        }
         return attacks.addAvailable(amount);
     }
     
@@ -188,56 +200,62 @@ public class Fighter {
         return relics.countRelic(id);
     }
     
-    public void addRelic(Relic relic){
-        switch (relic.getId()){
-            case 4:
-                setMaxHealth(getMaxHealth()+10);
-                setCurHealth(getCurHealth()+10);
-                break;
-            case 14:
-                setMaxHealth(getMaxHealth()-50);
-                setCurHealth(getCurHealth()-50);
-                break;
-            case 15:
-                maxEnergy++;
-                energy++;
-                break;
-            case 16:
-                maxEnergy--;
-                energy--;
-                break;
-            case 20:
-                setMaxHealth(getMaxHealth()+15);
-                setCurHealth(getCurHealth()+15);
-                break;
-            case 21:
-                setMaxHealth(getMaxHealth()+25);
-                setCurHealth(getCurHealth()+25);
-                break;
-            case 22:
-                setMaxHealth(getMaxHealth()+50);
-                setCurHealth(getCurHealth()+50);
-                break;
-            case 23:
-                setMaxHealth(getMaxHealth()+100);
-                setCurHealth(getCurHealth()+100);
-                break;
-        }
+    public void addRelic(Relic relic, boolean applyEffects){
         relics.addRelic(relic);
-        if (name.equals("You")){
-            if (countRelic(2) >= 3){ // Thief
-                Achievements.giveAchievement(7);
+        if (applyEffects){
+            switch (relic.getId()){
+                case 4:
+                    setMaxHealth(getMaxHealth()+10);
+                    setCurHealth(getCurHealth()+10);
+                    break;
+                case 14:
+                    setMaxHealth(getMaxHealth()-50);
+                    setCurHealth(getCurHealth()-50);
+                    break;
+                case 15:
+                    maxEnergy++;
+                    energy++;
+                    break;
+                case 16:
+                    maxEnergy--;
+                    energy--;
+                    break;
+                case 20:
+                    setMaxHealth(getMaxHealth()+15);
+                setCurHealth(getCurHealth()+15);
+                    break;
+                case 21:
+                    setMaxHealth(getMaxHealth()+25);
+                    setCurHealth(getCurHealth()+25);
+                    break;
+                case 22:
+                    setMaxHealth(getMaxHealth()+50);
+                    setCurHealth(getCurHealth()+50);
+                    break;
+                case 23:
+                    setMaxHealth(getMaxHealth()+100);
+                    setCurHealth(getCurHealth()+100);
+                    break;
             }
-            if (getMaxHealth() >= 300){ // Gluttony
-                Achievements.giveAchievement(5);
-            }
-            if (hasRelic(5) && hasRelic(6) && hasRelic(7)){ // Heirloom Collector
-                Achievements.giveAchievement(9);
-                if (hasRelic(8) && hasRelic(9) && hasRelic(10)){ // Heirloom Collector+
-                    Achievements.giveAchievement(10);
+            if (name.equals("You")){
+                if (countRelic(2) >= 3){ // Thief
+                    Achievements.giveAchievement(7);
+                }
+                if (getMaxHealth() >= 300){ // Gluttony
+                    Achievements.giveAchievement(5);
+                }
+                if (hasRelic(5) && hasRelic(6) && hasRelic(7)){ // Heirloom Collector
+                    Achievements.giveAchievement(9);
+                    if (hasRelic(8) && hasRelic(9) && hasRelic(10)){ // Heirloom Collector+
+                        Achievements.giveAchievement(10);
+                    }
                 }
             }
         }
+    }
+    
+    public void addRelic(Relic relic){
+        addRelic(relic, true);
     }
     
     public void removeRelic(int index){
@@ -258,10 +276,6 @@ public class Fighter {
     
     public String getName(){
         return name;
-    }
-    
-    public String getSprite(){
-        return Sprites.humanoids[1];
     }
     
     public String toString(){

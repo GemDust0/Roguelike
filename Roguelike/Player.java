@@ -23,7 +23,7 @@ public class Player extends Fighter{
             addItem(item);
         }
         for (Relic relic : relics){
-            addRelic(relic);
+            addRelic(relic, false);
         }
         this.coins = coins;
     }
@@ -32,6 +32,10 @@ public class Player extends Fighter{
         if (hasRelic(24)){
             coins *= 2;
             lib.getInput("Economist doubled the amount of coins you earned");
+        }
+        if (hasRelic(26) && lib.randint(3) == 0){
+            coins *= 2;
+            lib.getInput("Cat doubled the amount of coins you earned");
         }
         this.coins += coins;
     }
@@ -56,15 +60,14 @@ public class Player extends Fighter{
         itemsUsed = 0;
     }
     
-    public boolean useItem(int index, Fighter target, BattleManager battle){
-        if (items.useItem(index, this, target, battle)){
+    public boolean useItem(int index, Fighter target){
+        if (items.useItem(index, this, target)){
             itemsUsed++;
         }
-        reduceEnergy();
-        return itemsUsed > countRelic(0) || getEnergy() == 0;
+        return itemsUsed > countRelic(0);
     }
     
-    public boolean chooseItem(Fighter target, BattleManager battle){
+    public boolean chooseItem(Fighter target){
         if (getCurHealth() == 0 || target.getCurHealth() == 0){
             return true;
         }
@@ -72,18 +75,24 @@ public class Player extends Fighter{
             return false;
         }
         String c = null;
-        battle.clearMessages();
+        BattleManager.clearMessages();
         while (true){
             lib.clear();
-            battle.renderBattle();
+            BattleManager.renderBattle();
             System.out.println("Pick an item, enter nothing to return to the menu:");
             for (int i=0; i<items.getItems().size(); i++){
                 System.out.println((i+1) + ". " + items.getItems().get(i));
             }
+            if (hasRelic(0)){
+                System.out.println("Free item uses left: " + (countRelic(0) - itemsUsed) + "/" + countRelic(0));
+            }
             try {
+                if (target.getCurHealth() == 0){
+                    return true;
+                }
                 c = lib.getInput("\n=> ");
                 if (Integer.parseInt(c) > 0 && Integer.parseInt(c) <= items.getItems().size()){
-                    return useItem(Integer.parseInt(c)-1, target, battle) ? true : chooseItem(target, battle);
+                    return useItem(Integer.parseInt(c)-1, target) ? true : chooseItem(target);
                 }
             } catch (Exception e){
                 if (c.equals("")){
@@ -91,9 +100,5 @@ public class Player extends Fighter{
                 }
             }
         }
-    }
-    
-    public String getSprite(){
-        return Sprites.humanoids[0];
     }
 }

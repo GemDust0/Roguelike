@@ -1,16 +1,18 @@
 public class Achievements {
     private static String[] names = {
-        "Bosskiller",
-        "Overkill",
-        "'Tis but a Scratch",
-        "Out of Stock",
-        "One Trick Pony",
-        "Glutton",
-        "Explorer",
-        "Thief",
-        "Stonks",
-        "Heirloom Collector",
-        "Heirloom Collector+"
+        "Bosskiller", // Kill a boss
+        "Overkill", // Deal 3x an enemy's max hp in one hit
+        "'Tis but a Scratch", // End a battle on 1 hp
+        "Out of Stock", // Buy out an entire shop
+        "One Trick Pony", // Have only one attack in your deck
+        "Glutton", // Have over 300+ health
+        "Explorer", // Reach depth 5
+        "Thief", // Have at least 5 pickpocketing 101's at once
+        "Stonks", // Get over 1000 coins after a battle
+        "Heirloom Collector", // Have all heirlooms
+        "Heirloom Collector+", // Have all Heirloom+s
+        "Poison Connoisseur", // Have at least 50 poison at once
+        "A Myriad of Options" // Have at least 50 attacks in your deck at once
     };
     private static String[] descriptions = {
         "I'm the boss now",
@@ -23,7 +25,9 @@ public class Achievements {
         "You know you can earn cash in another way right?",
         "Good job! You ruined the economy!",
         "Heirlooms are one of a kind not for what they are, but for what they represent.",
-        "You seem to have quite the attachment to them."
+        "You seem to have quite the attachment to them.",
+        "You really enjoy being poisoned don't you?",
+        "You're not running out of options anytime soon"
     };
     
     private static boolean[] achievements = new boolean[names.length];

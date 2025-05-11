@@ -28,7 +28,6 @@ public class Effect {
     };
     
     private EffectEnum effect;
-    private boolean countdownMessage;
     private Integer duration;
     private int strength;
     private int chance;
@@ -38,7 +37,6 @@ public class Effect {
         this.duration = duration;
         this.strength = strength;
         this.chance = 100;
-        countdownMessage();
     }
     
     public Effect(EffectEnum effect, Integer duration, int strength, int chance){
@@ -46,44 +44,8 @@ public class Effect {
         this.duration = duration;
         this.strength = strength;
         this.chance = chance;
-        countdownMessage();
     }
-    
-    public void countdownMessage(){
-        switch (effect){
-            case DAMAGE:
-                countdownMessage = true;
-                break;
-            case HEAL:
-                countdownMessage = true;
-                break;
-            case POISON:
-                countdownMessage = true;
-                break;
-            case REGENERATION:
-                countdownMessage = true;
-                break;
-            case DRAW:
-                countdownMessage = true;
-                break;
-            case HEALHALFMAX:
-                countdownMessage = true;
-                break;
-            case PERCENTDAMAGE:
-                countdownMessage = true;
-                break;
-            case ENERGY:
-                countdownMessage = true;
-                break;
-            case TRUEDAMAGE:
-                countdownMessage = true;
-                break;
-            default:
-                countdownMessage = false;
-        }
-    }
-    
-    public void damage(Fighter opponent, Fighter target, BattleManager battle, int amount){
+    public int damage(Fighter opponent, Fighter target, int amount){
         amount = Math.max(amount, 0);
         if (opponent.hasRelic(19)){ // Pacifist
             amount = 0;
@@ -93,21 +55,34 @@ public class Effect {
         } else {
             amount *= Math.pow(2, target.countRelic(25));
         }
-        target.damage(amount);
-        battle.addMessage(target.getName() + " took " + amount + " damage");
-        if (amount >= target.getMaxHealth()*3){
-            battle.addAchievement(1);
+        if (opponent.hasRelic(26) && lib.randint(3) == 0){
+            BattleManager.addMessage("Cat doubled the damage dealt");
+            amount *= 2;
         }
+        if (target.hasRelic(26) && lib.randint(3) == 0){
+            BattleManager.addMessage("Cat doubled the damage taken");
+            amount *= 2;
+        } else if (target.hasRelic(26) && lib.randint(6) == 0){
+            BattleManager.addMessage("Cat nullified the damage");
+            amount = 0;
+        }
+        target.damage(amount);
+        if (amount >= target.getMaxHealth()*3){
+            BattleManager.addAchievement(1);
+        }
+        if (opponent.hasRelic(27)){
+            new Effect(Effect.EffectEnum.POISON, null, opponent.countRelic(27)).apply(opponent, target);
+        }
+        return amount;
     }
     
-    public void heal(Fighter opponent, Fighter target, BattleManager battle, int amount){
+    public int heal(Fighter opponent, Fighter target, int amount){
         target.heal(amount);
-        battle.addMessage(target.getName() + " healed " + amount + " hp");
+        return amount;
     }
     
-    public boolean countdown(Fighter opponent, Fighter target, BattleManager battle){
+    public boolean countdown(Fighter opponent, Fighter target){
         int amount;
-        double decamount;
         switch (effect){
             case DAMAGE:
                 amount = strength;
@@ -127,52 +102,66 @@ public class Effect {
                         target.removeEffect(armor);
                     }
                 }
-                damage(opponent, target, battle, amount);
+                BattleManager.addMessage(target.getName() + " took " + damage(opponent, target, amount) + " damage");
                 break;
             case HEAL:
                 amount = strength;
-                heal(opponent, target, battle, amount);
+                BattleManager.addMessage(target.getName() + " healed " + heal(opponent, target, amount) + " hp");
                 break;
             case POISON:
                 amount = strength--;
-                target.damage(amount);
-                battle.addMessage(target.getName() + " took " + amount + " damge from the poison");
+                if (target.hasRelic(28)){
+                    amount = heal(opponent, target, amount);
+                    BattleManager.addMessage(target.getName() + " healed " + amount + " health from the poison");
+                } else {
+                    amount = damage(opponent, target, amount);
+                    BattleManager.addMessage(target.getName() + " took " + amount + " damge from the poison");
+                }
+                if (target.hasRelic(30)){
+                    strength++;
+                    strength *= 2;
+                }
+                if (target instanceof Player && target.hasRelic(31)){
+                    ((Player)target).addCoins(amount);
+                    BattleManager.addMessage(target.getName() + " received " + amount + " coins for the poison");
+                }
                 if (strength <= 0){
                     target.removeEffect(this);
                 }
                 break;
             case REGENERATION:
-                amount = strength;
-                heal(opponent, target, battle, amount);
+                amount = strength--;
+                BattleManager.addMessage(target.getName() + " healed " + heal(opponent, target, amount) + " hp");
                 break;
             case DRAW:
                 amount = strength;
                 amount = target.addAvailable(amount);
                 if (amount == 1){
-                    battle.addMessage(target.getName() + " drew 1 attack");
+                    BattleManager.addMessage(target.getName() + " drew 1 attack");
                 } else {
-                    battle.addMessage(target.getName() + " drew " + amount + " attacks");
+                    BattleManager.addMessage(target.getName() + " drew " + amount + " attacks");
                 }
-                if (opponent.hasRelic(1)){
-                    new Effect(Effect.EffectEnum.PERCENTDAMAGE, 1, 2*amount).apply(opponent, target, battle);
+                if (opponent.hasRelic(1) && amount > 0){
+                    BattleManager.addMessage(target.getName() + " took damage from the Cursed Hand");
+                    new Effect(Effect.EffectEnum.PERCENTDAMAGE, 1, 2*amount).apply(opponent, target);
                 }
                 break;
             case HEALHALFMAX:
                 amount = (int)Math.ceil(target.getMaxHealth()/2.0);
-                heal(opponent, target, battle, amount);
+                 BattleManager.addMessage(target.getName() + " healed " + heal(opponent, target, amount) + " hp");
                 break;
             case PERCENTDAMAGE:
                 amount = Math.max((int)(target.getMaxHealth()*strength/100.0), 1);
-                damage(opponent, target, battle, amount);
+                BattleManager.addMessage(target.getName() + " took " + damage(opponent, target, amount) + " damage");
                 break;
             case ENERGY:
                 amount = strength;
                 target.restoreEnergy(amount);
-                battle.addMessage(target.getName() + " restored " + amount + " energy");
+                BattleManager.addMessage(target.getName() + " restored " + amount + " energy");
                 break;
             case TRUEDAMAGE:
                 amount = strength;
-                damage(opponent, target, battle, amount);
+                damage(opponent, target, amount);
                 break;
         }
         if (duration != null){
@@ -188,7 +177,7 @@ public class Effect {
         return false;
     }
     
-    public void apply(Fighter user, Fighter target, BattleManager battle){
+    public void apply(Fighter user, Fighter target){
         if (effect == EffectEnum.STUN && (target.hasEffect(EffectEnum.STUNIMMUNE) || target.hasEffect(EffectEnum.STUN))){
             return;
         }
@@ -212,55 +201,63 @@ public class Effect {
                             user.removeEffect(strength);
                         }
                     }
+                    if (user.hasEffect(EffectEnum.POISON)){
+                        Effect strength = user.getEffect(EffectEnum.POISON);
+                        newEffect.setStrength(newEffect.getStrength()+strength.getStrength());
+                        strength.setStrength(strength.getStrength()-1);
+                        if (strength.getStrength() <= 0){
+                            user.removeEffect(strength);
+                        }
+                    }
                     break;
                 case POISON:
                     if (target.getName().equals("You")){
-                        battle.addMessage("You were inflicted with poison");
+                        BattleManager.addMessage("You were inflicted with poison");
                     } else {
-                        battle.addMessage(target.getName() + " was inflicted with poison");
+                        BattleManager.addMessage(target.getName() + " was inflicted with poison");
                     }
                     break;
                 case REGENERATION:
-                    battle.addMessage(target.getName() + " received regeneration");
+                    BattleManager.addMessage(target.getName() + " received regeneration");
                     break;
                 case BRITTLE:
-                    battle.addMessage(target.getName() + " became brittle");
+                    BattleManager.addMessage(target.getName() + " became brittle");
                     break;
                 case WEAK:
-                    battle.addMessage(target.getName() + " became weak");
+                    BattleManager.addMessage(target.getName() + " became weak");
                     break;
                 case ARMOR:
-                    battle.addMessage(target.getName() + " received armor");
+                    BattleManager.addMessage(target.getName() + " received armor");
                     break;
                 case STRENGTH:
-                    battle.addMessage(target.getName() + " received strength");
+                    BattleManager.addMessage(target.getName() + " received strength");
                     break;
                 case STUN:
-                    battle.addMessage(target.getName() + " became stunned");
+                    BattleManager.addMessage(target.getName() + " became stunned");
                     break;
             }
             target.addEffect(newEffect);
             switch (effect){
                 case DAMAGE:
-                    newEffect.countdown(user, target, battle);
+                    newEffect.countdown(user, target);
                     break;
                 case HEAL:
-                    newEffect.countdown(user, target, battle);
+                    newEffect.countdown(user, target);
                     break;
                 case DRAW:
-                    newEffect.countdown(user, target, battle);
+                    newEffect.countdown(user, target);
                     break;
                 case HEALHALFMAX:
-                    newEffect.countdown(user, target, battle);
+                    newEffect.countdown(user, target);
                     break;
                 case PERCENTDAMAGE:
-                    newEffect.countdown(user, target, battle);
+                    newEffect.countdown(user, target);
                     break;
                 case ENERGY:
-                    newEffect.countdown(user, target, battle);
+                    newEffect.countdown(user, target);
                     break;
                 case TRUEDAMAGE:
-                    newEffect.countdown(user, target, battle);
+                    newEffect.countdown(user, target);
                     break;
             }
         }
@@ -284,10 +281,6 @@ public class Effect {
     
     public int getStrength(){
         return strength;
-    }
-    
-    public boolean hasMessage(){
-        return countdownMessage;
     }
     
     public String toString(){

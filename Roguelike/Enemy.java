@@ -4,7 +4,8 @@ public class Enemy extends Fighter{
     
     public static enum Type {
         ATTACK,
-        TANK
+        TANK,
+        POISON
     }
     
     public void add(ArrayList<Integer> arraylist, int[] array){
@@ -15,7 +16,7 @@ public class Enemy extends Fighter{
     
     public Enemy(Type type, int depth, boolean boss, Player player){
         super(null, 0, 0);
-        double healthMult = Math.pow(1.2, depth);
+        double healthMult = Math.pow(2.3, depth);
         if (player.hasRelic(24)){
             healthMult *= 1.5;
         }
@@ -60,7 +61,7 @@ public class Enemy extends Fighter{
                     add(availableRelics, new int[] {8, 8, 8, 8});
                 }
                 
-                setMaxHealth((int)(15*healthMult));
+                setMaxHealth((int)(10*healthMult));
                 addAttack(AttackList.attacks[0]);
                 addAttack(AttackList.attacks[0]);
                 addAttack(AttackList.attacks[5]);
@@ -92,11 +93,38 @@ public class Enemy extends Fighter{
                     availableRelics.remove(1);
                 }
                 
-                setMaxHealth((int)(20*healthMult));
+                setMaxHealth((int)(15*healthMult));
                 addAttack(AttackList.attacks[0]);
                 addAttack(AttackList.attacks[2]);
                 addAttack(AttackList.attacks[2]);
                 addAttack(AttackList.attacks[9]);
+                break;
+            
+            case POISON:
+                availableNames = new String[] {"Poisson"};
+                
+                add(availableAttacks, new int[] {0, 0, 7, 7, 7, 13});
+                add(availableRelics, new int[] {27, 27, 27, 27, 29, 29, 30});
+                
+                if (depth >= 2){
+                    add(availableAttacks, new int[] {14, 14, 14, 14});
+                    availableAttacks.remove(0);
+                    availableAttacks.remove(0);
+                    add(availableRelics, new int[] {12, 12, 29, 29, 30, 30, 30, 28, 28, 28});
+                }
+                
+                if (depth >= 5){
+                    add(availableAttacks, new int[] {13, 13, 13, 14, 14, 14, 14});
+                    add(availableRelics, new int[] {12, 12, 29, 29, 30, 30, 30, 28, 28, 28});
+                }
+                
+                setMaxHealth((int)(10*healthMult));
+                addAttack(AttackList.attacks[0]);
+                addAttack(AttackList.attacks[0]);
+                addAttack(AttackList.attacks[7]);
+                addAttack(AttackList.attacks[7]);
+                addAttack(AttackList.attacks[7]);
+                addAttack(AttackList.attacks[13]);
                 break;
             
             default:
@@ -132,9 +160,5 @@ public class Enemy extends Fighter{
         heal();
         setMaxEnergy(energy);
         restoreEnergy();
-    }
-    
-    public String getSprite(){
-        return Sprites.humanoids[1];
     }
 }

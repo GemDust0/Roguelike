@@ -49,7 +49,7 @@ public class Map {
         map.add(3);
         map.add(2);
         depth++;
-        if (depth >= 20){
+        if (depth >= 5){
             Achievements.giveAchievement(6);
         }
     }

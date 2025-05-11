@@ -25,6 +25,17 @@ public class RelicList {
         new Relic("Sundae", 22, Shop.Rarity.LEGENDARY, "Increases max hp by 50", -1),
         new Relic("Gourmet Meal", 23, Shop.Rarity.STELLAR, "Increases max hp by 100", 5),
         new Relic("Economist", 24, Shop.Rarity.UNIQUE, "All coins earned are doubled, enemies have 50% more hp", -2),
-        new Relic("Double Trouble", 25, Shop.Rarity.STELLAR, "All damage is doubled", -1)
+        new Relic("Double Trouble", 25, Shop.Rarity.STELLAR, "All damage is doubled", -1),
+        new Relic("Cat", 26, Shop.Rarity.UNIQUE, "Cat", -1),
+        new Relic("Venomous Skin", 27, Shop.Rarity.RARE, "All your attacks inflict 1 extra poison to the target", -1),
+        new Relic("Poison Heal", 28, Shop.Rarity.UNIQUE, "Poison heals you for the amount it would otherwise damage you", -1),
+        new Relic("Poisonous Strength", 29, Shop.Rarity.UNIQUE, "Poison also acts as strength", -1),
+        new Relic("Blood Poisoning", 30, Shop.Rarity.UNIQUE, "Double your poison at the end of every turn, poison no longer decreases over time", -2),
+        new Relic("Golden Blood", 31, Shop.Rarity.EPIC, "Gain coins equal to your poison whenever poison ticks", -1),
+        new Relic("Headstart", 32, Shop.Rarity.EPIC, "Draw 1 extra card at the start of battle", -1),
+        new Relic("Sleight of Hand", 33, Shop.Rarity.LEGENDARY, "Draw 1 extra card at the end of every turn", -1),
+        new Relic("Strong Draw", 34, Shop.Rarity.UNIQUE, "Gain 1 strength for every card drawn", -1),
+        new Relic("Strength in Numbers", 35, Shop.Rarity.UNIQUE, "Gain 1 strength for every attack in your deck at the start of battle", -1),
+        new Relic("Hat Trick", 36, Shop.Rarity.UNIQUE, "Get to pick which card to draw whenever you draw a card", -2)
     };
 }
