@@ -201,7 +201,7 @@ public class Effect {
                             user.removeEffect(strength);
                         }
                     }
-                    if (user.hasEffect(EffectEnum.POISON)){
+                    if (user.hasRelic(29) && user.hasEffect(EffectEnum.POISON)){
                         Effect strength = user.getEffect(EffectEnum.POISON);
                         newEffect.setStrength(newEffect.getStrength()+strength.getStrength());
                         strength.setStrength(strength.getStrength()-1);

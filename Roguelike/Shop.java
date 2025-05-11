@@ -173,6 +173,10 @@ public class Shop {
         }
     }
     
+    public void resetRestocks(){
+        restocks = 0;
+    }
+    
     public static void renderName(String name){
         // Don't question that which works.
             String[] display = new String[] {"|    ", "|    ", "|    ", "|    ", "|    "};

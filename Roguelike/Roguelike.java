@@ -376,6 +376,7 @@ public class Roguelike {
                             break;
                         case 3:
                             Shop shop = map.shops[lib.randint(map.shops.length)];
+                            shop.resetRestocks();
                             shop.open();
                             break;
                         case 4:
