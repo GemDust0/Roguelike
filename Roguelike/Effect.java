@@ -173,6 +173,8 @@ public class Effect {
                 }
                 return true;
             }
+        } else if (strength <= 0){
+            target.removeEffect(this);
         }
         return false;
     }
