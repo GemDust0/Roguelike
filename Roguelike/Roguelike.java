@@ -56,7 +56,7 @@ public class Roguelike {
                         quit = true;
                         break;
                 }
-            } catch (Exception e){throw e;}
+            } catch (Exception e){}
         }
     }
     
