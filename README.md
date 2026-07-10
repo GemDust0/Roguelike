@@ -1,5 +1,5 @@
 # Roguelike
-Just a roguelike project i started for fun
+Just a roguelike project I started for fun
 
 Run Roguelike.bat to start  the program.
 
